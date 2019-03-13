@@ -10,14 +10,22 @@
  */
 class KO7_ImageTest extends Unittest_TestCase {
 
+	/**
+	 * Default values for the environment, see setEnvironment
+	 * @var array
+	 */
+	protected $environmentDefault =	[
+		'image.default_driver' => NULL
+	];
+
 	public function setUp(): void
 	{
-		parent::setUp();
-
 		if ( ! extension_loaded('gd'))
 		{
 			$this->markTestSkipped('The GD extension is not available.');
 		}
+
+		parent::setUp();
 	}
 
 	/**
@@ -55,10 +63,30 @@ class KO7_ImageTest extends Unittest_TestCase {
 	}
 
 	/**
-	 * Tests the conversion to a string
+	 * Provides test data for test_crop()
+	 *
+	 * @return array
 	 */
-	public function test_to_string()
+	public function provider_to_string()
 	{
+		return [
+      [NULL],
+      
+      // Gifs differ
+      //['Imagick']
+		];
+	}
+
+	/**
+	 * Tests the conversion to a string
+   *
+	 * @dataProvider provider_to_string
+   * @param string provider Image provider/driver
+	 */
+	public function test_to_string($provider = NULL)
+	{
+		KO7::$config->load('image')->set('default_driver', $provider);
+
 		$image = Image::factory(MODPATH.'image/tests/test_data/test_image.gif');
 		$this->assertSame(file_get_contents(MODPATH.'image/tests/test_data/test_image.gif'), (string) $image);
 	}
@@ -74,6 +102,9 @@ class KO7_ImageTest extends Unittest_TestCase {
 			['test_image.gif'],
 			['test_image.png'],
 			['test_image.jpg'],
+			['test_image.gif', 'Imagick'],
+			['test_image.png', 'Imagick'],
+			['test_image.jpg', 'Imagick'],
 		];
 	}
 
@@ -82,9 +113,12 @@ class KO7_ImageTest extends Unittest_TestCase {
 	 *
 	 * @dataProvider provider_formats
 	 * @param string image_file Image file
+   * @param string provider Image provider/driver
 	 */
-	public function test_formats($image_file)
+	public function test_formats($image_file, $provider = NULL)
 	{
+		KO7::$config->load('image')->set('default_driver', $provider);
+
 		$image = Image::factory(MODPATH.'image/tests/test_data/'.$image_file);
 		$this->assertTrue(TRUE);
 	}
@@ -94,9 +128,12 @@ class KO7_ImageTest extends Unittest_TestCase {
 	 *
 	 * @dataProvider provider_formats
 	 * @param string image_file Image file
+   * @param string provider Image provider/driver
 	 */
-	public function test_save_types($image_file)
+	public function test_save_types($image_file, $provider = NULL)
 	{
+		KO7::$config->load('image')->set('default_driver', $provider);
+
 		$image = Image::factory(MODPATH.'image/tests/test_data/'.$image_file);
 		$this->assertTrue($image->save(KO7::$cache_dir.'/'.$image_file));
 
@@ -151,7 +188,8 @@ class KO7_ImageTest extends Unittest_TestCase {
 			[100, 100, Image::INVERSE, 100, 100],
 			[100, 100, Image::PRECISE, 100, 100],
 			[100, 50, Image::PRECISE, 100, 100],
-			[NULL, NULL, Image::NONE, 150, 150]
+			[NULL, NULL, Image::NONE, 150, 150],
+      [NULL, NULL, Image::NONE, 150, 150, 'Imagick']
 		];
 	}
 
@@ -164,9 +202,12 @@ class KO7_ImageTest extends Unittest_TestCase {
 	 * @param string master resize mode
 	 * @param string expected_width expected width of the resulting image
 	 * @param string expected_height expected height of the resulting image
+   * @param string provider Image provider/driver
 	 */
-	public function test_resize($width, $height, $master, $expected_width, $expected_height)
+	public function test_resize($width, $height, $master, $expected_width, $expected_height, $provider = NULL)
 	{
+		KO7::$config->load('image')->set('default_driver', $provider);
+
 		$image = Image::factory(MODPATH.'image/tests/test_data/test_image.gif');
 
 		$result = $image->resize($width, $height, $master);
@@ -192,7 +233,8 @@ class KO7_ImageTest extends Unittest_TestCase {
 			[100, 100, NULL, TRUE, 100, 100],
 			[100, 100, NULL, -50, 100, 100],
 			// Triggers the max_width and max_height protection
-			[100, 100, 100, 100, 50, 50]
+			[100, 100, 100, 100, 50, 50],
+      [100, 100, NULL, NULL, 100, 100, 'Imagick']
 		];
 	}
 
@@ -206,9 +248,12 @@ class KO7_ImageTest extends Unittest_TestCase {
 	 * @param string offset_y y offset of the target image
 	 * @param string expected_width expected width of the resulting image
 	 * @param string expected_height expected height of the resulting image
+   * @param string provider Image provider/driver
 	 */
-	public function test_crop($width, $height, $offset_x, $offset_y, $expected_width, $expected_height)
+	public function test_crop($width, $height, $offset_x, $offset_y, $expected_width, $expected_height, $provider = NULL)
 	{
+		KO7::$config->load('image')->set('default_driver', $provider);
+
 		$image = Image::factory(MODPATH.'image/tests/test_data/test_image.gif');
 
 		$result = $image->crop($width, $height, $offset_x, $offset_y);
@@ -229,6 +274,7 @@ class KO7_ImageTest extends Unittest_TestCase {
 		return [
 			[360],
 			[-360],
+      [360, 'Imagick'],
 		];
 	}
 
@@ -237,9 +283,12 @@ class KO7_ImageTest extends Unittest_TestCase {
 	 *
 	 * @dataProvider provider_rotate
 	 * @param string angle Angle to rotate to
+   * @param string provider Image provider/driver
 	 */
-	public function test_rotate($angle)
+	public function test_rotate($angle, $provider = NULL)
 	{
+		KO7::$config->load('image')->set('default_driver', $provider);
+
 		$image = Image::factory(MODPATH.'image/tests/test_data/test_image.gif');
 
 		$result = $image->rotate($angle);
@@ -257,6 +306,8 @@ class KO7_ImageTest extends Unittest_TestCase {
 		return [
 			[Image::HORIZONTAL],
 			[Image::VERTICAL],
+      [Image::HORIZONTAL, 'Imagick'],
+      [Image::VERTICAL, 'Imagick']
 		];
 	}
 
@@ -265,9 +316,12 @@ class KO7_ImageTest extends Unittest_TestCase {
 	 *
 	 * @dataProvider provider_flip
 	 * @param string direction Flip direction
+   * @param string provider Image provider/driver
 	 */
-	public function test_flip($direction)
+	public function test_flip($direction, $provider = NULL)
 	{
+		KO7::$config->load('image')->set('default_driver', $provider);
+
 		$image = Image::factory(MODPATH.'image/tests/test_data/test_image.gif');
 
 		$result = $image->flip($direction);
@@ -276,10 +330,26 @@ class KO7_ImageTest extends Unittest_TestCase {
 	}
 	
 	/**
-	 * Tests the sharpen function
+	 * Provides test data for test_crop()
+	 *
+	 * @return array
 	 */
-	public function test_sharpen()
+	public function provider_sharpen()
 	{
+		return [
+      [NULL],
+      ['Imagick']
+		];
+	}
+
+	/**
+	 * Tests the sharpen function
+	 * @dataProvider provider_sharpen
+	 */
+	public function test_sharpen($provider = NULL)
+	{
+		KO7::$config->load('image')->set('default_driver', $provider);
+
 		$image = Image::factory(MODPATH.'image/tests/test_data/test_image.gif');
 
 		$result = $image->sharpen(20);
@@ -298,6 +368,8 @@ class KO7_ImageTest extends Unittest_TestCase {
 			[NULL, 90, FALSE],
 			[NULL, 110, FALSE],
 			[NULL, 90, TRUE],
+			[NULL, 90, FALSE, 'Imagick'],
+      [NULL, 90, TRUE, 'Imagick']
 		];
 	}
 	
@@ -305,9 +377,15 @@ class KO7_ImageTest extends Unittest_TestCase {
 	 * Tests the reflection function
 	 *
 	 * @dataProvider provider_reflection
+	 * @param string height height of the target image
+   * @param string opacity Opacity
+   * @param string fade_in Fade in
+   * @param string provider Image provider/driver
 	 */
-	public function test_reflection($height, $opacity, $fade_in)
+	public function test_reflection($height, $opacity, $fade_in, $provider = NULL)
 	{
+		KO7::$config->load('image')->set('default_driver', $provider);
+
 		$image = Image::factory(MODPATH.'image/tests/test_data/test_image.gif');
 
 		$result = $image->reflection($height, $opacity, $fade_in);
@@ -325,6 +403,7 @@ class KO7_ImageTest extends Unittest_TestCase {
 	{
 		return [
 			['#000', 100],
+			['#000', 100, 'Imagick'],
 		];
 	}
 	
@@ -333,8 +412,10 @@ class KO7_ImageTest extends Unittest_TestCase {
 	 *
 	 * @dataProvider provider_background
 	 */
-	public function test_background($color, $opacity)
+	public function test_background($color, $opacity, $provider = NULL)
 	{
+		KO7::$config->load('image')->set('default_driver', $provider);
+
 		$image = Image::factory(MODPATH.'image/tests/test_data/test_image.gif');
 
 		$result = $image->background($color, $opacity);
