@@ -42,13 +42,13 @@ end of a line.
 
 ## Links
 ~~~
-This is a normal link: [Koseven](http://koseven.ga).
+This is a normal link: [Koseven](http://koseven.dev).
 
-This link has a title: [Koseven](http://koseven.ga "The swift PHP framework")
+This link has a title: [Koseven](http://koseven.dev "The swift PHP framework")
 ~~~
-This is a normal link: [KO7](http://koseven.ga)
+This is a normal link: [KO7](http://koseven.dev)
 
-This link has a title: [KO7](http://koseven.ga "The swift PHP framework")
+This link has a title: [KO7](http://koseven.dev "The swift PHP framework")
 
 ## Code blocks
 

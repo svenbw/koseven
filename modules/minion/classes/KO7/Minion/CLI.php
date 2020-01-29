@@ -2,16 +2,16 @@
 
 /**
  * @package    KO7/Minion
- * @author     Kohana Team
+ * 
  * @copyright  (c) 2015 Kohana Team
  * @copyright  (c) 2016-2018 Koseven Team
- * @license    https://koseven.ga/LICENSE.md
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_Minion_CLI {
 
 	public static $wait_msg = 'Press any key to continue...';
 	public static $invalid_option_msg = 'This is not a valid option. Please try again.';
-	
+
 	protected static $foreground_colors = [
 		'black'        => '0;30',
 		'dark_gray'    => '1;30',
@@ -234,7 +234,7 @@ class KO7_Minion_CLI {
 	{
 		// Append a newline if $end_line is TRUE
 		$text = $end_line ? $text.PHP_EOL : $text;
-		
+
 		if (Kohana::$is_windows)
 		{
 			fwrite(STDOUT, "\r".$text);

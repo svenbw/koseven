@@ -4,9 +4,10 @@
  *
  * @package    KO7/Cache
  * @category   Base
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 interface KO7_Cache_Tagging {
 

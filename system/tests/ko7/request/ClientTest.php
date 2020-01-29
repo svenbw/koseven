@@ -9,10 +9,11 @@
  *
  * @package    KO7
  * @category   Tests
- * @author     Kohana Team
+ *
  * @author	   Andrew Coulton
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_Request_ClientTest extends Unittest_TestCase
 {

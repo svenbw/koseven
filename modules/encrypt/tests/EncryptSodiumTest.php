@@ -7,9 +7,9 @@
  *
  * @package        KO7/Encrypt
  * @category       Test
- * @author         Koseven Team
+ * even Team
  * @copyright  (c) Koseven Team
- * @license        https://koseven.ga/LICENSE.md
+ * @license        https://koseven.dev/LICENSE
  */
 class EncryptSodiumTest extends EncryptTestBase {
 

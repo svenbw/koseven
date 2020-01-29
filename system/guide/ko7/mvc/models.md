@@ -1,10 +1,7 @@
 # Models
 
-From Wikipedia:
-
- > The model manages the behavior and data of the application domain,
- > responds to requests for information about its state (usually from the view),
- > and responds to instructions to change state (usually from the controller).
+The model manages the behavior and data of the application domain, responds to requests for information about its state
+(usually from the view), and responds to instructions to change state (usually from the controller).
 
 Creating a simple model:
 
@@ -32,4 +29,4 @@ If you want database access, have your model extend the Model_Database class:
 		}
 	}
 
-If you want CRUD/ORM capabilities, see the [ORM Module](../../guide/orm)
+If you want CRUD/ORM capabilities, see the [ORM Module](../orm)

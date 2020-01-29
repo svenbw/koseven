@@ -67,6 +67,10 @@
             color: #155724;
         }
 
+        .warning {
+            color: #d2b362;
+        }
+
         .fail {
             color: #721c24;
         }
@@ -124,7 +128,7 @@
 
         <h1>Environment Tests</h1>
         <p>
-            The following tests have been run to determine if Koseven will work in your environment. If any of the tests have failed, consult the <a href="https://docs.koseven.ga/guide/ko7/install" target="_blank">documentation</a> for more information on how to correct the problem.
+            The following tests have been run to determine if Koseven will work in your environment. If any of the tests have failed, consult the <a href="https://koseven.dev/guide/ko7/install" target="_blank">documentation</a> for more information on how to correct the problem.
         </p>
 
         <?php $failed = FALSE ?>
@@ -276,7 +280,7 @@
                     <?php if (extension_loaded('http')): ?>
                     <td class="pass">Pass</td>
                     <?php else: ?>
-                    <td class="fail">Koseven can use the <a href="http://php.net/http">http</a> extension for the Request_Client_External class.</td>
+                    <td class="fail">Koseven can use the <a href="http://php.net/http">http</a> extension for external requests.</td>
                     <?php endif ?>
                 </tr>
                 <tr>
@@ -284,16 +288,40 @@
                     <?php if (extension_loaded('curl')): ?>
                     <td class="pass">Pass</td>
                     <?php else: ?>
-                    <td class="fail">Koseven can use the <a href="http://php.net/curl">cURL</a> extension for the Request_Client_External class.</td>
+                    <td class="fail">Koseven can use the <a href="http://php.net/curl">cURL</a> extension for external requests.</td>
                     <?php endif ?>
                 </tr>
                 <tr>
                     <th>GD Enabled</th>
-                    <?php if (function_exists('gd_info')): ?>
-                    <td class="pass">Pass</td>
+                    <?php
+                    if (extension_loaded('gd') && version_compare(GD_VERSION, '2.0', '>=')):
+                        if (gd_info()['WebP Support'] && gd_info()['BMP Support']):
+                    ?>
+                            <td class="pass">Pass</td>
+                        <?php else: ?>
+                            <td class="warning">For full support we recommend installing GD with 'webp' and 'bmp' support.</td>
+                        <?php endif; ?>
                     <?php else: ?>
-                    <td class="fail">Koseven requires <a href="http://php.net/gd">GD</a> v2 for the Image class.</td>
+                    <td class="fail">Koseven can use <a href="http://php.net/gd">GD</a> >= v2 for Image manipulation</td>
                     <?php endif ?>
+                </tr>
+                <tr>
+                    <th>Imagick Enabled</th>
+					<?php
+					if (
+					        extension_loaded('imagick') &&
+                            preg_match('/ImageMagick ([0-9]+\.[0-9]+\.[0-9]+)/', Imagick::getVersion()['versionString'], $api_version) === 1 &&
+							version_compare($api_version[1], '6.9', '>=')
+                    ):
+						if (Imagick::queryFormats('WEBP') && Imagick::queryFormats('BMP')):
+							?>
+                            <td class="pass">Pass</td>
+						<?php else: ?>
+                            <td class="warning">For full support we recommend installing imagick with 'webp' and 'bmp' support.</td>
+						<?php endif; ?>
+					<?php else: ?>
+                        <td class="fail">Koseven can use <a href="http://php.net/imagick">Imagick</a> >= v6.9 for Image manipulation.</td>
+					<?php endif ?>
                 </tr>
                 <tr>
                     <th>MySQLi Enabled</th>

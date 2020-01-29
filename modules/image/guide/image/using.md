@@ -1,6 +1,6 @@
 # Basic Usage
 
-Shown here are the basic usage of this module. For full documentation about the image module usage, visit the [Image] api browser.
+Shown here are the basic usage of this module. For more Information about the image module usage, you can visit the [Image] api browser.
 
 ## Creating Instance
 
@@ -80,6 +80,50 @@ $img->render(NULL, 50);
 $img->render('png');
 ~~~
 
+## Reflect
+[Image::reflect()] creates an reflection of the image. It has three parameters: `height` (started from top how much shall be reflected), `opacity` (self explaining) and `fade_in` (TRUE = opacity increases from bottom to top, FALSE = vice versa)
+
+~~~
+// Create a 50 pixel reflection that fades from 100-0% opacity
+$image->reflection(50, 100, TRUE);
+
+// Create a 50 pixel reflection that fades from 0-60% opacity
+$image->reflection(50);
+
+// Create a 50 pixel reflection that fades from 100-60% opacity
+$image->reflection(50, 60);
+~~~
+
+Note: By default, the reflection will be go from transparent at the top to opaque at the bottom.
+
+## Watermark
+
+[Image::watermark()] adds a watermark to the image. It has four parameters: `watermark` (the watermark image - must ba an instance of `Image`), `offset_x` (Offset from the left), `offset_y` (Offset from the top), `opacity` (Watermarks opacity).
+
+If no offset is specified, the center of the axis will be used.
+If an offset of TRUE is specified, the bottom of the axis will be used.
+
+~~~
+// Add a watermark to the bottom right of the image
+$mark = Image::factory('upload/watermark.png');
+$image->watermark($mark, TRUE, TRUE);
+~~~
+
+Note: If the watermark is bigger than the actual image size it automatically get's resized to the image dimensions (keeping it's aspect ratio).
+
+## RGB Background
+
+[Image::background()] let's you add a RGB-Background to your image. Please keep in mind that this will only work if your image has "Alpha Transparency Channel".
+The Method supports to variables: `color` (HEX-Representation of color to use), `opacity` (Background's Opacity).
+
+~~~
+// Make the image background black
+image->background('#000');
+
+// Make the image background black with 50% opacity
+$image->background('#000', 50);
+~~~
+
 ## Save To File
 
 [Image::save()] let's you save the image object to a file. It has two parameters: `filename` and `quality`. If `filename` is omitted, the original file used will be overwritten instead. The `quality` parameter is an integer from 1-100 which indicates the quality of image to save which defaults to 100.
@@ -92,21 +136,33 @@ $img = Image::factory(DOCROOT.'uploads/colorado-farm-1920x1200.jpg');
 $filename = DOCROOT.'uploads/img-'.uniqid().'.jpg';
 
 $img->resize(300, 300)
-	->save($filename, 80);
+	->save($filename, 80);	
+
 ~~~
 
 What we do is resize the image and save it to file reducing quality to 80% and save it to the upload directory using a unique filename.
+
+You can also convert let's say your png to a jpg. You simply save it as one:
+
+~~~
+// We load it as PNG
+$img = Image::factory('png_image.png');
+
+// Now save it as JPG
+$img->save('jpg_image.jpg');
+~~~
+
+Note: If the file exists, but is not writable, an exception will be thrown.
+Note: If the file does not exist, and the directory is not writable, an exception will be thrown.
 
 ## Other Methods
 
 There are more methods available for the [Image] module which provides powerfull features that are best describe in the API documentation. Here are some of them:
 
-* [Image::background()] - Set the background color of an image. 
+
 * [Image::crop()] - Crop an image to the given size.
 * [Image::flip()] - Flip the image along the horizontal or vertical axis.
-* [Image::reflection()] - Add a reflection to an image.
 * [Image::rotate()] - Rotate the image by a given amount.
 * [Image::sharpen()] - Sharpen the image by a given amount.
-* [Image::watermark()] - Add a watermark to an image with a specified opacity.
 
 Next: [Examples](examples)

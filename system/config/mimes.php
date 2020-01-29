@@ -4,7 +4,7 @@
  * the operating system MIME list.
  *
  * If there are any missing options, please create a ticket on our issue tracker,
- * http://koseven.ga/trac/newticket. Be sure to give the filename and
+ * http://koseven.dev/trac/newticket. Be sure to give the filename and
  * expected MIME type, as well as any additional information you can provide.
  */
 return [

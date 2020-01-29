@@ -1,0 +1,26 @@
+comment: off
+
+coverage:
+  status:
+    project:
+      default: off
+      application:
+        target: 100%
+        flags: application
+      modules:
+        target: auto
+        flags: modules
+      system:
+        target: auto
+        flags: system
+
+flags:
+  application:
+    paths:
+      - application/
+  modules:
+    paths:
+      - modules/
+  system:
+    paths:
+      - system/

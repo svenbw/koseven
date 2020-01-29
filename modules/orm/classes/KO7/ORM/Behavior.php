@@ -2,9 +2,9 @@
 
 /**
  * @package    KO7/ORM
- * @author     Koseven Team
+ *
  * @copyright  (c) 2016-2018 Koseven Team
- * @license    https://koseven.ga/LICENSE.md
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_ORM_Behavior {
 

@@ -1,29 +1,60 @@
-# Creating a New Application
+# Creating a New Application using Git
 
-[!!] The following examples assume that your web server is already set up, and you are going to create a new application at <http://localhost/gitorial/>.
+[!!] The following examples assume that your web server is already set up.
 
-Using your console, change to the empty directory `gitorial` and run `git init`. This will create the bare structure for a new git repository.
+Using your console, change to the configured document root of your websever and run `git init`. 
+This will create the bare structure for a new git repository.
 
-Next, we will clone koseven Go to <http://github.com/koseven/koseven> and copy the "Clone URL":
+## Using Koseven inside your main repository
 
-Now use the URL to initialize koseven:
+Now we will download the Koseven Framework by cloning it's contents via git:
 
     git clone git://github.com/koseven/koseven.git .
 
-[!!] This will download the current development version of the next stable release. 
-Please Note: The development version is not intended to be used on production servers.
-To switch to `master` branch which is stable, simply run:
-
-    git checkout master
-
-Now that we are in master, you can commit those files to your repository:
+Next you can commit those files to your repository:
 
     git commit -m 'Initial commit'
 
-We don't want git to track log or cache files, so add a `.gitignore` file to each of the directories. This will ignore all non-hidden files:
-
-    echo '[^.]*' > application/{logs,cache}/.gitignore
-
-[!!] Git ignores empty directories, so adding a `.gitignore` file also makes sure that git will track the directory, but not the files within it.
-
 That's all there is to it. You now have an application that is using Git for versioning.
+
+## Using Koseven as a sub-repository
+
+If you want an option to make it easier to upgrade to current koseven versions by keeping it as a submodule in
+your repository here is how you can do it.
+
+First we will add koseven as submodule into our repository via:
+
+    git submodule add -b master https://github.com/koseven/koseven system
+    git submodule init 
+    
+*Note: You can also use other branches for example "devel" (not recommended in production environments)*
+
+Now let's copy the `public` and `application` folder from `system/application` and `system/public` into our repository
+root:
+
+    cp -R system/application . 
+    cp -R system/public .
+    
+Alright. Since we are done with the basic folder structure we now need to edit a few lines in our `public/index.php`
+by changing the `$modules` and `$system` variables:
+
+    $modules = 'system'.DIRECTORY_SEPARATOR.'modules';
+    $system = 'system'.DIRECTORY_SEPARATOR.'system';
+    
+Now let's copy the `.gitignore` file from koseven and an initialization commit
+    
+    cp system/.gitignore .
+    git add -A
+    git commit -m 'Initial Commit'
+    
+That's it! Whenever you want to update koseven simply run:
+
+    git submodule update --recursive --remote
+    
+without making any further changes or need to merge something.
+
+*Note: If you update your koseven version make sure application/bootstrap.php and index.php are not changing, if they do so please keep in mind, that you also have to change them.*
+
+    
+
+

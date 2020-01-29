@@ -46,14 +46,14 @@ The new file creates the initial request object, rather than fully executing the
 	 * The directory in which your application specific resources are located.
 	 * The application directory must contain the bootstrap.php file.
 	 *
-	 * @link http://koseven.ga/guide/about.install#application
+	 * @link http://koseven.dev/guide/about.install#application
 	 */
 	$application = 'application';
 
 	/**
 	 * The directory in which your modules are located.
 	 *
-	 * @link http://koseven.ga/guide/about.install#modules
+	 * @link http://koseven.dev/guide/about.install#modules
 	 */
 	$modules = 'modules';
 
@@ -61,7 +61,7 @@ The new file creates the initial request object, rather than fully executing the
 	 * The directory in which the Kohana resources are located. The system
 	 * directory must contain the classes/ko7.php file.
 	 *
-	 * @link http://koseven.ga/guide/about.install#system
+	 * @link http://koseven.dev/guide/about.install#system
 	 */
 	$system = 'system';
 
@@ -69,7 +69,7 @@ The new file creates the initial request object, rather than fully executing the
 	 * The default extension of resource files. If you change this, all resources
 	 * must be renamed to use the new extension.
 	 *
-	 * @link http://koseven.ga/guide/about.install#ext
+	 * @link http://koseven.dev/guide/about.install#ext
 	 */
 	define('EXT', '.php');
 
@@ -92,7 +92,7 @@ The new file creates the initial request object, rather than fully executing the
 	 * End of standard configuration! Changing any of the code below should only be
 	 * attempted by those with a working knowledge of Koseven internals.
 	 *
-	 * @link http://koseven.ga/guide/using.configuration
+	 * @link http://koseven.dev/guide/using.configuration
 	 */
 
 	// Set the full path to the docroot
@@ -200,7 +200,7 @@ Now that we're set up, we can add Koseven into our application using a single in
 		require_once 'ko7/include.php';
 
 		$content = 'Hello World';
-		$content = HTML::anchor('http://koseven.ga/', $content);
+		$content = HTML::anchor('http://koseven.dev/', $content);
 	?>
 	<html>
 	<head>

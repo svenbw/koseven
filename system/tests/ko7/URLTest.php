@@ -9,10 +9,11 @@
  *
  * @package    KO7
  * @category   Tests
- * @author     Kohana Team
+ *
  * @author     BRMatt <matthew@sigswitch.com>
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_URLTest extends Unittest_TestCase
 {
@@ -269,7 +270,7 @@ class KO7_URLTest extends Unittest_TestCase
 			[['_GET' => ['more' => 'data']], '?more=data&test=data', ['test' => 'data']],
 			[['_GET' => ['sort' => 'down']], '?test=data', ['test' => 'data'], FALSE],
 
-			// http://koseven.ga/issues/3362
+			// http://koseven.dev/issues/3362
 			[[], '', ['key' => NULL]],
 			[[], '?key=0', ['key' => FALSE]],
 			[[], '?key=1', ['key' => TRUE]],
@@ -328,7 +329,7 @@ class KO7_URLTest extends Unittest_TestCase
 			],
 			// data set #2
 			[
-				'www.koseven.ga',
+				'www.koseven.dev',
 				[
 					'.*\.koseven\.ga',
 				],
@@ -336,7 +337,7 @@ class KO7_URLTest extends Unittest_TestCase
 			],
 			// data set #3
 			[
-				'koseven.ga',
+				'koseven.dev',
 				[
 					'.*\.koseven\.ga',
 				],

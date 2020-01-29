@@ -9,11 +9,12 @@
  *
  * @package    KO7
  * @category   Tests
- * @author     Kohana Team
+ *
  * @author     Jeremy Bush <contractfrombelow@gmail.com>
  * @author     Andrew Coulton <andrew@ingenerator.com>
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_CookieTest extends Unittest_TestCase
 {
@@ -162,8 +163,8 @@ class KO7_CookieTest extends Unittest_TestCase
 
 	/**
 	 * @covers Cookie::delete
-	 * @link    http://koseven.ga/issues/3501
-	 * @link    http://koseven.ga/issues/3020
+	 * @link    http://koseven.dev/issues/3501
+	 * @link    http://koseven.dev/issues/3020
 	 */
 	public function test_delete_does_not_require_configured_salt()
 	{
@@ -202,9 +203,7 @@ class KO7_CookieTest extends Unittest_TestCase
 		return [
 			[['name' => 'foo', 'value' => 'bar', 'salt' => 'our-salt', 'user-agent' => 'Chrome'], ['name' => 'changed']],
 			[['name' => 'foo', 'value' => 'bar', 'salt' => 'our-salt', 'user-agent' => 'Chrome'], ['value' => 'changed']],
-			[['name' => 'foo', 'value' => 'bar', 'salt' => 'our-salt', 'user-agent' => 'Chrome'], ['salt' => 'changed-salt']],
-			[['name' => 'foo', 'value' => 'bar', 'salt' => 'our-salt', 'user-agent' => 'Chrome'], ['user-agent' => 'Firefox']],
-			[['name' => 'foo', 'value' => 'bar', 'salt' => 'our-salt', 'user-agent' => 'Chrome'], ['user-agent' => NULL]],
+			[['name' => 'foo', 'value' => 'bar', 'salt' => 'our-salt', 'user-agent' => 'Chrome'], ['salt' => 'changed-salt']]
 		];
 	}
 

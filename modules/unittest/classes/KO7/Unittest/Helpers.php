@@ -4,10 +4,10 @@
  *
  * @package    KO7/UnitTest
  *
- * @author     Koseven Team
+ *
  * @copyright  (c) 2007-2012 Kohana Team
  * @copyright  (c) 2016-2018 Koseven Team
- * @license    https://koseven.ga/LICENSE.md
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_Unittest_Helpers {
 

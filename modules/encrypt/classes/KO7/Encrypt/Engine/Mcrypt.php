@@ -17,10 +17,10 @@
  *
  * @package    KO7/Encrypt
  * @category   Security
- * @author     Koseven Team
+ *
  * @copyright  (c) 2007-2012 Kohana Team
  * @copyright  (c) 2016-2018 Koseven Team
- * @license    https://koseven.ga/LICENSE.md
+ * @license    https://koseven.dev/LICENSE
  * @deprecated since 4.0
  */
 class KO7_Encrypt_Engine_Mcrypt extends KO7_Encrypt_Engine {
@@ -46,6 +46,8 @@ class KO7_Encrypt_Engine_Mcrypt extends KO7_Encrypt_Engine {
 			throw new KO7_Exception('Mcrypt extension is not available');
 			// @codeCoverageIgnoreEnd
 		}
+
+		KO7::deprecated('4.0');
 
 		parent::__construct($config);
 

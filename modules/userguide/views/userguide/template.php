@@ -14,7 +14,7 @@
 
 	<div id="kodoc-header">
 		<div class="container">
-			<a id="kodoc-logo" href="https://koseven.ga/">koseven</a>
+			<a id="kodoc-logo" href="https://koseven.dev/">koseven</a>
 			<div id="kodoc-menu">
 				<ul>
 					<li class="guide first">
@@ -82,7 +82,7 @@
 			<?php endif ?>
 			</div>
 			<div class="span-12 last right">
-			<p>Powered by <?php echo HTML::anchor('https://koseven.ga/', 'Koseven') ?> v<?php echo KO7::VERSION ?></p>
+			<p>Powered by <?php echo HTML::anchor('https://koseven.dev/', 'Koseven') ?> v<?php echo KO7::VERSION ?></p>
 			</div>
 		</div>
 	</div>

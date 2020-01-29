@@ -50,7 +50,7 @@ You can add conditional statements to make the bootstrap have different values b
 /**
  * Set the environment status by the domain.
  */
-if (strpos($_SERVER['HTTP_HOST'], 'koseven.ga') !== FALSE)
+if (strpos($_SERVER['HTTP_HOST'], 'koseven.dev') !== FALSE)
 {
 	// We are live!
 	KO7::$environment = KO7::PRODUCTION;
@@ -64,7 +64,7 @@ if (strpos($_SERVER['HTTP_HOST'], 'koseven.ga') !== FALSE)
  ... [trimmed]
  */
 KO7::init(array(
-	'base_url'   => KO7::$environment === KO7::PRODUCTION ? '/' : '/koseven.ga/',
+	'base_url'   => KO7::$environment === KO7::PRODUCTION ? '/' : '/koseven.dev/',
 	'caching'    => KO7::$environment === KO7::PRODUCTION,
 	'profile'    => KO7::$environment !== KO7::PRODUCTION,
 	'index_file' => FALSE,

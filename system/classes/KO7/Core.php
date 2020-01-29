@@ -9,9 +9,10 @@
  *
  * @package    KO7
  * @category   Base
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_Core {
 
@@ -1040,4 +1041,34 @@ class KO7_Core {
 		return 'Koseven '.KO7::VERSION.' ('.KO7::CODENAME.')';
 	}
 
+	/**
+	 * Call this within your function to mark it deprecated.
+	 *
+	 * @param string $since			Version since this function shall be marked deprecated.
+	 * @param string $replacement   [optional] replacement function to use instead
+	 */
+	public static function deprecated(string $since, string $replacement = '') : void
+	{
+		// Get current debug backtrace
+		$calling = debug_backtrace()[1];
+
+		// Extract calling class and calling function
+		$class = $calling['class'];
+		$function = $calling['function'];
+
+		// Build message
+		$msg = 'Function "' . $function . '" inside class "' . $class . '" is deprecated since version ' . $since .
+			   ' and will be removed within the next major release.';
+
+		// Check if replacement function is provided
+		if ($replacement)
+		{
+			$msg .= ' Please consider replacing it with "' . $replacement . '".';
+		}
+
+		// Log the deprecation
+		$log = static::$log;
+		$log->add(Log::WARNING, $msg);
+		$log->write();
+	}
 }

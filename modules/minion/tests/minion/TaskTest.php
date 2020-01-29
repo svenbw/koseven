@@ -7,9 +7,10 @@
  * @group      ko7
  * @group      ko7.minion
  * @category   Test
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 
 class Minion_TaskTest extends KO7_Unittest_TestCase
@@ -80,7 +81,7 @@ class Minion_TaskTest extends KO7_Unittest_TestCase
 	{
 		$this->assertSame($expected, Minion_Task::convert_class_to_task($class));
 	}
-	
+
 	/**
 	 * Provides test data for test_set_domain_name()
 	 *
@@ -107,7 +108,7 @@ class Minion_TaskTest extends KO7_Unittest_TestCase
 	public function test_set_domain_name($expected, $name, $uri)
 	{
 		Minion_Task::set_domain_name($name);
-		
+
 		$this->assertSame(
 			$expected,
 			URL::site($uri, TRUE, FALSE)

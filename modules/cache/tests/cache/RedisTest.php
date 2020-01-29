@@ -2,9 +2,9 @@
 /**
  * @package    KO7/Cache
  * @category   Test
- * @author     Koseven Team
+ *
  * @copyright  (c) Koseven Team
- * @license    https://koseven.ga/LICENSE.md
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_RedisTest extends KO7_CacheBasicMethodsTest {
 

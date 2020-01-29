@@ -4,9 +4,10 @@
  * Invalid Task Exception
  *
  * @package    KO7/Minion
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_Minion_Exception_InvalidTask extends Minion_Exception {
 

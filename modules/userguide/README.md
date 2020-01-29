@@ -9,7 +9,7 @@ Documentation should use complete sentences, good grammar, and be as clear as po
 
 Try to commit often, with each commit only changing a file or two, rather than changing a ton of files and commiting it all at once.  This will make it easier to offer feedback and merge your changes.   Make sure your commit messages are clear and descriptive.  Good: "Added initial draft of hello world tutorial."  Bad: "working on docs".
 
-If you feel a menu needs to be rearranged or a module needs new pages, please open a [bug report](http://koseven.ga/projects/userguide3/issues/new) to discuss it.
+If you feel a menu needs to be rearranged or a module needs new pages, please open a [bug report](http://koseven.dev/projects/userguide3/issues/new) to discuss it.
 
 ## A brief explanation of how the userguide works:
 

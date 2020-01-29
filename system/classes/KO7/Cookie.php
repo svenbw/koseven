@@ -4,9 +4,10 @@
  *
  * @package    KO7
  * @category   Helpers
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_Cookie {
 
@@ -158,10 +159,7 @@ class KO7_Cookie {
 			throw new KO7_Exception('A valid cookie salt is required. Please set Cookie::$salt in your bootstrap.php. For more information check the documentation');
 		}
 
-		// Determine the user agent
-		$agent = isset($_SERVER['HTTP_USER_AGENT']) ? strtolower($_SERVER['HTTP_USER_AGENT']) : 'unknown';
-
-		return hash_hmac('sha1', $agent.$name.$value.Cookie::$salt, Cookie::$salt);
+		return hash_hmac('sha1', $name.$value.Cookie::$salt, Cookie::$salt);
 	}
 
 	/**

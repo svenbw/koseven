@@ -38,6 +38,25 @@ Other than this difference, they are exactly the same. You can detect if the req
 
 An external request calls out to a third party website.
 
+Koseven comes shipped with 3 external Request Classes:
+
+Class                                                            | Function
+-----------------------------------------------------------------|---------
+[Request_External_Client_HTTP] Request_External_Client_HTTP      | Requires `pecl_http >= 3.0.0`. Sends Request using the `pecl_http` extension.
+[Request_External_Client_Curl] Request_External_Client_Curl      | Requires `php-curl`. Sends cURL Requsts using the `php-curl` extension.
+[Request_External_Client_Stream] Request_External_Client_Stream  | Does not require any additional extension. Please note: if you send `POST` requests using this class you need to ensure that the stream is write-able.
+
+If `php-curl` is present, than `Request_External_Client_Curl` is the default class that's used.
+
+Else if `pecl_http`is present `Request_External_Client_HTTP` is used by default.
+
+If non of above is present `Request_External_Client_Stream` will be used.
+
+To manually select the Client to use you need to set the following option (ideally in your `bootstrap.php`):
+
+    // Use HTTP Client (pecl_http) as default client
+    Request_Client_External::$client = 'Request_Client_HTTP';
+
 You can use this to scrape HTML from a remote site, or make a REST call to a third party API:
 
 	// This uses GET

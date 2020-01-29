@@ -8,7 +8,7 @@ class Bench_ValidURL extends Codebench {
 
 	public $description =
 		'filter_var vs regex:
-		 http://koseven.ga/issues/2847';
+		 http://koseven.dev/issues/2847';
 
 	public $loops = 1000;
 

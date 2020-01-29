@@ -1,0 +1,39 @@
+name: Koseven
+
+on: [push,pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Download current Docker-Image
+        run: docker pull koseven/docker:travis-devel
+
+      - name: Mount Directories and run Docker-Machine
+        run: docker run -dtP --name unittest -v /home/runner/work/koseven/koseven:/tmp/koseven/ koseven/docker:travis-devel
+
+      - name: Install composer dependencies
+        run: docker exec unittest /bin/sh -c "service redis-server start; cd /tmp/koseven; composer install"
+
+      - name: Run Koseven Unittest(s)
+        run: docker exec unittest /bin/sh -c "cd /tmp/koseven; php vendor/bin/phpunit"
+
+      - name: Link Coverage Report
+        run: ln -s $(pwd) /tmp/koseven
+
+      - name: Upload Application Coverage
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: bash <(curl -s https://codecov.io/bash) -f /tmp/koseven/build/logs/clover.xml -F application
+
+      - name: Upload Modules Coverage
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: bash <(curl -s https://codecov.io/bash) -f /tmp/koseven/build/logs/clover.xml -F modules
+
+      - name: Upload System Coverage
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: bash <(curl -s https://codecov.io/bash) -f /tmp/koseven/build/logs/clover.xml -F system

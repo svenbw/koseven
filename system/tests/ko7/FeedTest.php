@@ -9,10 +9,11 @@
  *
  * @package    KO7
  * @category   Tests
- * @author     Kohana Team
+ *
  * @author     Jeremy Bush <contractfrombelow@gmail.com>
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_FeedTest extends Unittest_TestCase
 {
@@ -69,7 +70,7 @@ class KO7_FeedTest extends Unittest_TestCase
 	 */
 	public function provider_create()
 	{
-		$info = ['pubDate' => 123, 'image' => ['link' => 'http://koseven.ga/image.png', 'url' => 'http://koseven.ga/', 'title' => 'title']];
+		$info = ['pubDate' => 123, 'image' => ['link' => 'http://koseven.dev/image.png', 'url' => 'http://koseven.dev/', 'title' => 'title']];
 
 		return [
 			// $source, $expected

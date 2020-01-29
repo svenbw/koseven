@@ -1,45 +1,90 @@
 <?php
 /**
- * Image manipulation support. Allows images to be resized, cropped, etc.
+ * Image manipulation support.
+ * Allows images to be resized, cropped, etc.
  *
- * @package    KO7/Image
- * @category   Base
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ * @package        KO7/Image
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license        https://koseven.dev/LICENSE
  */
 abstract class KO7_Image {
 
-	// Resizing constraints
-	const NONE = 0x01;
-	const WIDTH = 0x02;
-	const HEIGHT = 0x03;
-	const AUTO = 0x04;
-	const INVERSE = 0x05;
-	const PRECISE = 0x06;
-
-	// Flipping directions
-	const HORIZONTAL = 0x11;
-	const VERTICAL   = 0x12;
+	/**
+	 * Resize image by given values, regardless of original dimensions
+	 * e.g Image is 100x200, you resize to 50x80, image will be 50x80
+	 */
+	public const NONE = 0x01;
 
 	/**
-	 * @deprecated - provide an image.default_driver value in your configuration instead
-	 * @var  string  default driver: GD, ImageMagick, etc
+	 * Automatically choose resize direction with the highest reduction ratio *keeping* original dimensions
+	 * e.g Image is 100x200, you resize to 70x50, highest ratio = 4 - image will be 25x50
 	 */
-	public static $default_driver = 'GD';
+	public const AUTO = 0x04;
 
-	// Status of the driver check
+	/**
+	 * Automatically choose resize direction with the lowest reduction ratio *keeping* original dimensions
+	 * e.g Image is 100x200, you resize to 70x50, lowest ratio = 1,4285 image will be 70x140
+	 */
+	public const INVERSE = 0x05;
+
+	/**
+	 * FLIP horizontal
+	 */
+	public const HORIZONTAL = 0x11;
+
+	/**
+	 * Flip vertical
+	 */
+	public const VERTICAL = 0x12;
+
+	/**
+	 * True if driver dependencies are satisfied, false if not
+	 * @var bool
+	 */
 	protected static $_checked = FALSE;
+
+	/**
+	 * Path to Image File
+	 * @var  string
+	 */
+	public $file;
+
+	/**
+	 * Image Width
+	 * @var  integer
+	 */
+	public $width;
+
+	/**
+	 * Image Height
+	 * @var  integer
+	 */
+	public $height;
+
+	/**
+	 * Image Type (IMAGETYPE_* constants)
+	 * @var  integer
+	 */
+	public $type;
+
+	/**
+	 * Image mime type
+	 * @var  string
+	 */
+	public $mime;
 
 	/**
 	 * Loads an image and prepares it for manipulation.
 	 *
-	 *     $image = Image::factory('upload/test.jpg');
+	 * @param string $file	  Path to the Image file
+	 * @param string $driver  Driver to use (overrides driver which is set in config)
 	 *
-	 * @param   string   $file    image file path
-	 * @param   string   $driver  driver type: GD, ImageMagick, etc
-	 * @return  Image
-	 * @uses    Image::$default_driver
+	 * @throws Image_Exception
+	 * @throws KO7_Exception
+	 *
+	 * @return mixed
 	 */
 	public static function factory($file, $driver = NULL)
 	{
@@ -47,47 +92,47 @@ abstract class KO7_Image {
 		{
 			// Use the driver from configuration file or default one
 			$configured_driver = KO7::$config->load('image.default_driver');
-			$driver = ($configured_driver) ? $configured_driver : Image::$default_driver;
+
+			// If no driver is specified throw an error, there is no default driver since 4.0
+			if ($configured_driver === NULL)
+			{
+				throw new Image_Exception('Please specify a driver in your image configuration.');
+			}
 		}
 
 		// Set the class name
-		$class = 'Image_'.$driver;
+		$class = 'Image_' . $driver;;
 
-		return new $class($file);
+		// Check if class exists and extends this one
+		if ( is_string($class) && (! class_exists($class) || ! ($class = new $class($file)) instanceof Image))
+		{
+			throw new Image_Exception('Driver: ":driver" is not a valid Image Driver.', [
+				':driver' => $driver
+			]);
+		}
+
+		// Perform dependency check
+		// @codeCoverageIgnoreStart
+		if ( ! ($class::$_checked = $class::check()))
+		{
+			throw new Request_Exception('Dependencies for driver :driver not satisfied. Please check docs.', [
+				':driver' => $driver
+			]);
+		}
+		// @codeCoverageIgnoreEnd
+
+		return $class;
 	}
-
-	/**
-	 * @var  string  image file path
-	 */
-	public $file;
-
-	/**
-	 * @var  integer  image width
-	 */
-	public $width;
-
-	/**
-	 * @var  integer  image height
-	 */
-	public $height;
-
-	/**
-	 * @var  integer  one of the IMAGETYPE_* constants
-	 */
-	public $type;
-
-	/**
-	 * @var  string  mime type of the image
-	 */
-	public $mime;
 
 	/**
 	 * Loads information about the image. Will throw an exception if the image
 	 * does not exist or is not an image.
 	 *
-	 * @param   string  $file  image file path
+	 * @param string $file Image file path
+	 *
+	 * @throws  Image_Exception
+	 *
 	 * @return  void
-	 * @throws  KO7_Exception
 	 */
 	public function __construct($file)
 	{
@@ -101,174 +146,105 @@ abstract class KO7_Image {
 		}
 		catch (Exception $e)
 		{
-			// Ignore all errors while reading the image
+			// Catch exceptions, we don't need to thow them as we check them below
 		}
 
-		if (empty($file) OR empty($info))
+		// Check if valid image file
+		if (empty($file) || empty($info))
 		{
-			throw new KO7_Exception('Not an image or invalid image: :file',
-				[':file' => Debug::path($file)]);
+			throw new Image_Exception('Not an image or invalid image: :file', [
+				':file' => Debug::path($file)
+			]);
 		}
 
 		// Store the image information
-		$this->file   = $file;
-		$this->width  = $info[0];
+		$this->file = $file;
+		$this->width = $info[0];
 		$this->height = $info[1];
-		$this->type   = $info[2];
-		$this->mime   = image_type_to_mime_type($this->type);
-	}
+		$this->type = $info[2];
+		$this->mime = image_type_to_mime_type($this->type);
 
-	/**
-	 * Render the current image.
-	 *
-	 *     echo $image;
-	 *
-	 * [!!] The output of this function is binary and must be rendered with the
-	 * appropriate Content-Type header or it will not be displayed correctly!
-	 *
-	 * @return  string
-	 */
-	public function __toString()
-	{
-		try
-		{
-			// Render the current image
-			return $this->render();
+		// Check if image type is supported by our driver
+		// @codeCoverageIgnoreStart
+		if ( ! $this->_is_supported_type($this->type)) {
+			throw new Image_Exception('Image extension ":ext", is unknown by driver ":driver".', [
+				':ext' => image_type_to_extension($this->type),
+				':driver' => get_class($this)
+			]);
 		}
-		catch (Exception $e)
-		{
-			if (is_object(KO7::$log))
-			{
-				// Get the text of the exception
-				$error = KO7_Exception::text($e);
-
-				// Add this exception to the log
-				KO7::$log->add(Log::ERROR, $error);
-			}
-
-			// Showing any kind of error will be "inside" image data
-			return '';
-		}
+		// @codeCoverageIgnoreEnd
 	}
 
 	/**
 	 * Resize the image to the given size. Either the width or the height can
 	 * be omitted and the image will be resized proportionally.
 	 *
-	 *     // Resize to 200 pixels on the shortest side
-	 *     $image->resize(200, 200);
+	 * @param integer $width  New width
+	 * @param integer $height New height
+	 * @param integer $master Master dimension
 	 *
-	 *     // Resize to 200x200 pixels, keeping aspect ratio
-	 *     $image->resize(200, 200, Image::INVERSE);
+	 * @throws Image_Exception
 	 *
-	 *     // Resize to 500 pixel width, keeping aspect ratio
-	 *     $image->resize(500, NULL);
-	 *
-	 *     // Resize to 500 pixel height, keeping aspect ratio
-	 *     $image->resize(NULL, 500);
-	 *
-	 *     // Resize to 200x500 pixels, ignoring aspect ratio
-	 *     $image->resize(200, 500, Image::NONE);
-	 *
-	 * @param   integer  $width   new width
-	 * @param   integer  $height  new height
-	 * @param   integer  $master  master dimension
-	 * @return  $this
-	 * @uses    Image::_do_resize
+	 * @return  self
 	 */
 	public function resize($width = NULL, $height = NULL, $master = NULL)
 	{
+		// Check if at least width or height was set
+		if ($width === NULL && $height === NULL)
+		{
+			throw new Image_Exception('Please specify at least a width or a height.');
+		}
+
+		// Choose the master dimension automatically
 		if ($master === NULL)
 		{
-			// Choose the master dimension automatically
 			$master = Image::AUTO;
 		}
-		// Image::WIDTH and Image::HEIGHT deprecated. You can use it in old projects,
-		// but in new you must pass empty value for non-master dimension
-		elseif ($master == Image::WIDTH AND ! empty($width))
+		elseif ( ! in_array($master, [Image::AUTO, Image::INVERSE, Image::NONE], TRUE))
 		{
-			$master = Image::AUTO;
-
-			// Set empty height for backward compatibility
-			$height = NULL;
-		}
-		elseif ($master == Image::HEIGHT AND ! empty($height))
-		{
-			$master = Image::AUTO;
-
-			// Set empty width for backward compatibility
-			$width = NULL;
+			throw new Image_Exception('Invalid Master dimension, please specify a correct one');
 		}
 
-		if (empty($width))
+		// Set width if not set
+		if ($width === NULL && $master !== Image::NONE)
 		{
-			if ($master === Image::NONE)
+			$width = $this->width * $height / $this->height;
+		}
+
+		// Set height if not set
+		if ($height === NULL && $master !== Image::NONE)
+		{
+			$height = $this->height * $width / $this->width;
+		}
+
+		// Resize to exact given width/height
+		if ($master === Image::NONE)
+		{
+			if ($width === NULL)
 			{
-				// Use the current width
 				$width = $this->width;
 			}
-			else
+			elseif ($height === NULL)
 			{
-				// If width not set, master will be height
-				$master = Image::HEIGHT;
-			}
-		}
-
-		if (empty($height))
-		{
-			if ($master === Image::NONE)
-			{
-				// Use the current height
 				$height = $this->height;
 			}
-			else
-			{
-				// If height not set, master will be width
-				$master = Image::WIDTH;
-			}
 		}
 
-		switch ($master)
+		// Resize with the greatest / lowest reduction ratio
+		elseif (($this->width / $width) > ($this->height / $height) === ($master === Image::AUTO))
 		{
-			case Image::AUTO:
-				// Choose direction with the greatest reduction ratio
-				$master = ($this->width / $width) > ($this->height / $height) ? Image::WIDTH : Image::HEIGHT;
-			break;
-			case Image::INVERSE:
-				// Choose direction with the minimum reduction ratio
-				$master = ($this->width / $width) > ($this->height / $height) ? Image::HEIGHT : Image::WIDTH;
-			break;
+			$height = $this->height * $width / $this->width;
 		}
-
-		switch ($master)
+		else
 		{
-			case Image::WIDTH:
-				// Recalculate the height based on the width proportions
-				$height = $this->height * $width / $this->width;
-			break;
-			case Image::HEIGHT:
-				// Recalculate the width based on the height proportions
-				$width = $this->width * $height / $this->height;
-			break;
-			case Image::PRECISE:
-				// Resize to precise size
-				$ratio = $this->width / $this->height;
-
-				if ($width / $height > $ratio)
-				{
-					$height = $this->height * $width / $this->width;
-				}
-				else
-				{
-					$width = $this->width * $height / $this->height;
-				}
-			break;
+			$width = $this->width * $height / $this->height;
 		}
 
 		// Convert the width and height to integers, minimum value is 1px
-		$width  = max(round($width), 1);
+		$width = max(round($width), 1);
 		$height = max(round($height), 1);
 
+		// Call driver resize function
 		$this->_do_resize($width, $height);
 
 		return $this;
@@ -281,15 +257,12 @@ abstract class KO7_Image {
 	 * If no offset is specified, the center of the axis will be used.
 	 * If an offset of TRUE is specified, the bottom of the axis will be used.
 	 *
-	 *     // Crop the image to 200x200 pixels, from the center
-	 *     $image->crop(200, 200);
+	 * @param integer $width    New width
+	 * @param integer $height   New height
+	 * @param mixed   $offset_x Offset from the left - Set to true to start from right
+	 * @param mixed   $offset_y Offset from the top - Set to true to start from bottom
 	 *
-	 * @param   integer  $width     new width
-	 * @param   integer  $height    new height
-	 * @param   mixed    $offset_x  offset from the left
-	 * @param   mixed    $offset_y  offset from the top
-	 * @return  $this
-	 * @uses    Image::_do_crop
+	 * @return  self
 	 */
 	public function crop($width, $height, $offset_x = NULL, $offset_y = NULL)
 	{
@@ -312,7 +285,7 @@ abstract class KO7_Image {
 		}
 		elseif ($offset_x === TRUE)
 		{
-			// Bottom the X offset
+			// Right the X offset
 			$offset_x = $this->width - $width;
 		}
 		elseif ($offset_x < 0)
@@ -338,7 +311,7 @@ abstract class KO7_Image {
 		}
 
 		// Determine the maximum possible width and height
-		$max_width  = $this->width  - $offset_x;
+		$max_width = $this->width - $offset_x;
 		$max_height = $this->height - $offset_y;
 
 		if ($width > $max_width)
@@ -353,6 +326,7 @@ abstract class KO7_Image {
 			$height = $max_height;
 		}
 
+		// Call image driver crop
 		$this->_do_crop($width, $height, $offset_x, $offset_y);
 
 		return $this;
@@ -361,20 +335,20 @@ abstract class KO7_Image {
 	/**
 	 * Rotate the image by a given amount.
 	 *
-	 *     // Rotate 45 degrees clockwise
-	 *     $image->rotate(45);
+	 * @param integer $degrees degrees to rotate
 	 *
-	 *     // Rotate 90% counter-clockwise
-	 *     $image->rotate(-90);
-	 *
-	 * @param   integer  $degrees  degrees to rotate: -360-360
-	 * @return  $this
-	 * @uses    Image::_do_rotate
+	 * @return  self
 	 */
 	public function rotate($degrees)
 	{
 		// Make the degrees an integer
-		$degrees = (int) $degrees;
+		$degrees = (int)$degrees;
+
+		// Don't rotate if 360 degree
+		if ($degrees % 360 === 0)
+		{
+			return $this;
+		}
 
 		if ($degrees > 180)
 		{
@@ -382,8 +356,7 @@ abstract class KO7_Image {
 			{
 				// Keep subtracting full circles until the degrees have normalized
 				$degrees -= 360;
-			}
-			while ($degrees > 180);
+			} while ($degrees > 180);
 		}
 
 		if ($degrees < -180)
@@ -392,10 +365,10 @@ abstract class KO7_Image {
 			{
 				// Keep adding full circles until the degrees have normalized
 				$degrees += 360;
-			}
-			while ($degrees < -180);
+			} while ($degrees < -180);
 		}
 
+		// Call Image driver rotation function
 		$this->_do_rotate($degrees);
 
 		return $this;
@@ -404,15 +377,9 @@ abstract class KO7_Image {
 	/**
 	 * Flip the image along the horizontal or vertical axis.
 	 *
-	 *     // Flip the image from top to bottom
-	 *     $image->flip(Image::HORIZONTAL);
+	 * @param integer $direction Flip direction (Image::HORIZONTAL, Image::VERTICAL)
 	 *
-	 *     // Flip the image from left to right
-	 *     $image->flip(Image::VERTICAL);
-	 *
-	 * @param   integer  $direction  direction: Image::HORIZONTAL, Image::VERTICAL
-	 * @return  $this
-	 * @uses    Image::_do_flip
+	 * @return self
 	 */
 	public function flip($direction)
 	{
@@ -422,6 +389,7 @@ abstract class KO7_Image {
 			$direction = Image::VERTICAL;
 		}
 
+		// Call image driver flip function
 		$this->_do_flip($direction);
 
 		return $this;
@@ -430,18 +398,16 @@ abstract class KO7_Image {
 	/**
 	 * Sharpen the image by a given amount.
 	 *
-	 *     // Sharpen the image by 20%
-	 *     $image->sharpen(20);
+	 * @param integer $amount amount to sharpen (1-100)
 	 *
-	 * @param   integer  $amount  amount to sharpen: 1-100
-	 * @return  $this
-	 * @uses    Image::_do_sharpen
+	 * @return  self
 	 */
 	public function sharpen($amount)
 	{
 		// The amount must be in the range of 1 to 100
 		$amount = min(max($amount, 1), 100);
 
+		// Call image driver sharpen function
 		$this->_do_sharpen($amount);
 
 		return $this;
@@ -452,27 +418,15 @@ abstract class KO7_Image {
 	 * will be equal to the opacity setting and fade out to full transparent.
 	 * Alpha transparency is preserved.
 	 *
-	 *     // Create a 50 pixel reflection that fades from 0-100% opacity
-	 *     $image->reflection(50);
+	 * @param integer $height  Reflection height
+	 * @param integer $opacity Reflection opacity: 0-100
+	 * @param boolean $fade_in TRUE to fade in, FALSE to fade out
 	 *
-	 *     // Create a 50 pixel reflection that fades from 100-0% opacity
-	 *     $image->reflection(50, 100, TRUE);
-	 *
-	 *     // Create a 50 pixel reflection that fades from 0-60% opacity
-	 *     $image->reflection(50, 60, TRUE);
-	 *
-	 * [!!] By default, the reflection will be go from transparent at the top
-	 * to opaque at the bottom.
-	 *
-	 * @param   integer   $height   reflection height
-	 * @param   integer   $opacity  reflection opacity: 0-100
-	 * @param   boolean   $fade_in  TRUE to fade in, FALSE to fade out
-	 * @return  $this
-	 * @uses    Image::_do_reflection
+	 * @return  self
 	 */
 	public function reflection($height = NULL, $opacity = 100, $fade_in = FALSE)
 	{
-		if ($height === NULL OR $height > $this->height)
+		if ($height === NULL || $height > $this->height)
 		{
 			// Use the current height
 			$height = $this->height;
@@ -481,6 +435,7 @@ abstract class KO7_Image {
 		// The opacity must be in the range of 0 to 100
 		$opacity = min(max($opacity, 0), 100);
 
+		// Call image driver reflection function
 		$this->_do_reflection($height, $opacity, $fade_in);
 
 		return $this;
@@ -490,22 +445,23 @@ abstract class KO7_Image {
 	 * Add a watermark to an image with a specified opacity. Alpha transparency
 	 * will be preserved.
 	 *
-	 * If no offset is specified, the center of the axis will be used.
-	 * If an offset of TRUE is specified, the bottom of the axis will be used.
+	 * @param Image   $watermark watermark Image instance
+	 * @param integer $offset_x  Offset from the left
+	 * @param integer $offset_y  Offset from the top
+	 * @param integer $opacity   Opacity of watermark: 1-100
 	 *
-	 *     // Add a watermark to the bottom right of the image
-	 *     $mark = Image::factory('upload/watermark.png');
-	 *     $image->watermark($mark, TRUE, TRUE);
+	 * @throws  Image_Exception
 	 *
-	 * @param   Image    $watermark  watermark Image instance
-	 * @param   integer  $offset_x   offset from the left
-	 * @param   integer  $offset_y   offset from the top
-	 * @param   integer  $opacity    opacity of watermark: 1-100
-	 * @return  $this
-	 * @uses    Image::_do_watermark
+	 * @return  self
 	 */
 	public function watermark(Image $watermark, $offset_x = NULL, $offset_y = NULL, $opacity = 100)
 	{
+		// If watermark is to big, resize it to fit image
+		if ($watermark->height > $this->height || $watermark->width > $this->width)
+		{
+			$watermark->resize($this->width, $this->height, self::AUTO);
+		}
+
 		if ($offset_x === NULL)
 		{
 			// Center the X offset
@@ -513,7 +469,7 @@ abstract class KO7_Image {
 		}
 		elseif ($offset_x === TRUE)
 		{
-			// Bottom the X offset
+			// Right the X offset
 			$offset_x = $this->width - $watermark->width;
 		}
 		elseif ($offset_x < 0)
@@ -541,6 +497,7 @@ abstract class KO7_Image {
 		// The opacity must be in the range of 1 to 100
 		$opacity = min(max($opacity, 1), 100);
 
+		// Call image driver watermark function
 		$this->_do_watermark($watermark, $offset_x, $offset_y, $opacity);
 
 		return $this;
@@ -550,20 +507,14 @@ abstract class KO7_Image {
 	 * Set the background color of an image. This is only useful for images
 	 * with alpha transparency.
 	 *
-	 *     // Make the image background black
-	 *     $image->background('#000');
+	 * @param string  $color   Hexadecimal color value
+	 * @param integer $opacity Background opacity: 0-100
 	 *
-	 *     // Make the image background black with 50% opacity
-	 *     $image->background('#000', 50);
-	 *
-	 * @param   string   $color    hexadecimal color value
-	 * @param   integer  $opacity  background opacity: 0-100
 	 * @return  $this
-	 * @uses    Image::_do_background
 	 */
 	public function background($color, $opacity = 100)
 	{
-		if ($color[0] === '#')
+		if (strpos($color, '#') === 0)
 		{
 			// Remove the pound
 			$color = substr($color, 1);
@@ -576,11 +527,12 @@ abstract class KO7_Image {
 		}
 
 		// Convert the hex into RGB values
-		list ($r, $g, $b) = array_map('hexdec', str_split($color, 2));
+		[$r, $g, $b] = array_map('hexdec', str_split($color, 2));
 
 		// The opacity must be in the range of 0 to 100
 		$opacity = min(max($opacity, 0), 100);
 
+		// Call image driver background function
 		$this->_do_background($r, $g, $b, $opacity);
 
 		return $this;
@@ -590,174 +542,285 @@ abstract class KO7_Image {
 	 * Save the image. If the filename is omitted, the original image will
 	 * be overwritten.
 	 *
-	 *     // Save the image as a PNG
-	 *     $image->save('saved/cool.png');
+	 * @param string  $file    new image path
+	 * @param integer $quality quality of image: 1-100
 	 *
-	 *     // Overwrite the original image
-	 *     $image->save();
+	 * @throws  Image_Exception
 	 *
-	 * [!!] If the file exists, but is not writable, an exception will be thrown.
-	 *
-	 * [!!] If the file does not exist, and the directory is not writable, an
-	 * exception will be thrown.
-	 *
-	 * @param   string   $file     new image path
-	 * @param   integer  $quality  quality of image: 1-100
 	 * @return  boolean
-	 * @uses    Image::_save
-	 * @throws  KO7_Exception
 	 */
 	public function save($file = NULL, $quality = 100)
 	{
 		if ($file === NULL)
 		{
 			// Overwrite the file
-			$file = $this->file;
+			$file = $this->file; //@codeCoverageIgnore
+		}
+
+		// Get File Extension
+		$extension = pathinfo($file, PATHINFO_EXTENSION);
+
+		if ( ! $extension)
+		{
+			// Use the current image type
+			$extension = image_type_to_extension($this->type, FALSE);
+		}
+
+		// Check if it is supported
+		// @codeCoverageIgnoreStart
+		if ( ! $this->_is_supported_type(self::extension_to_image_type($extension)))
+		{
+			throw new Image_Exception('Image extension ":ext", is unknown by driver ":driver".', [
+				':ext' => $extension,
+				':driver' => get_class($this)
+			]);
 		}
 
 		if (is_file($file))
 		{
 			if ( ! is_writable($file))
 			{
-				throw new KO7_Exception('File must be writable: :file',
-					[':file' => Debug::path($file)]);
+				throw new Image_Exception('File must be writable: :file', [':file' => Debug::path($file)]);
 			}
 		}
+		// @codeCoverageIgnoreEnd
 		else
 		{
 			// Get the directory of the file
 			$directory = realpath(pathinfo($file, PATHINFO_DIRNAME));
 
-			if ( ! is_dir($directory) OR ! is_writable($directory))
+			// Check if is the directory is writable
+			if ( ! is_dir($directory) || ! is_writable($directory))
 			{
-				throw new KO7_Exception('Directory must be writable: :directory',
-					[':directory' => Debug::path($directory)]);
+				throw new Image_Exception('Directory must be writable: :directory', [
+					':directory' => Debug::path($directory)
+				]);
 			}
 		}
 
 		// The quality must be in the range of 1 to 100
 		$quality = min(max($quality, 1), 100);
 
+		// Call image driver save function
 		return $this->_do_save($file, $quality);
 	}
 
 	/**
 	 * Render the image and return the binary string.
 	 *
-	 *     // Render the image at 50% quality
-	 *     $data = $image->render(NULL, 50);
+	 * @param string  $extension    Image type to return: png, jpg, gif, etc
+	 * @param integer $quality		Quality of image: 1-100
 	 *
-	 *     // Render the image as a PNG
-	 *     $data = $image->render('png');
-	 *
-	 * @param   string   $type     image type to return: png, jpg, gif, etc
-	 * @param   integer  $quality  quality of image: 1-100
 	 * @return  string
-	 * @uses    Image::_do_render
 	 */
-	public function render($type = NULL, $quality = 100)
+	public function render($extension = NULL, $quality = 100)
 	{
-		if ($type === NULL)
+		if ($extension === NULL)
 		{
 			// Use the current image type
-			$type = image_type_to_extension($this->type, FALSE);
+			$extension = image_type_to_extension($this->type, FALSE);
+		}
+		elseif (strpos($extension, '.') === 0)
+		{
+			// remove "." from image extension
+			$extension = substr($extension, 1);
 		}
 
-		return $this->_do_render($type, $quality);
+		// The quality must be in the range of 1 to 100
+		$quality = min(max($quality, 1), 100);
+
+		// Call image driver render function
+		return $this->_do_render($extension, $quality);
 	}
 
 	/**
-	 * Execute a resize.
+	 * Render the current image.
 	 *
-	 * @param   integer  $width   new width
-	 * @param   integer  $height  new height
-	 * @return  void
-	 */
-	abstract protected function _do_resize($width, $height);
-
-	/**
-	 * Execute a crop.
+	 *     echo $image;
 	 *
-	 * @param   integer  $width     new width
-	 * @param   integer  $height    new height
-	 * @param   integer  $offset_x  offset from the left
-	 * @param   integer  $offset_y  offset from the top
-	 * @return  void
-	 */
-	abstract protected function _do_crop($width, $height, $offset_x, $offset_y);
-
-	/**
-	 * Execute a rotation.
+	 * [!!] The output of this function is binary and must be rendered with the
+	 * appropriate Content-Type header or it will not be displayed correctly!
 	 *
-	 * @param   integer  $degrees  degrees to rotate
-	 * @return  void
-	 */
-	abstract protected function _do_rotate($degrees);
-
-	/**
-	 * Execute a flip.
+	 * @codeCoverageIgnore We can ignore this, since it just calls render()
 	 *
-	 * @param   integer  $direction  direction to flip
-	 * @return  void
-	 */
-	abstract protected function _do_flip($direction);
-
-	/**
-	 * Execute a sharpen.
-	 *
-	 * @param   integer  $amount  amount to sharpen
-	 * @return  void
-	 */
-	abstract protected function _do_sharpen($amount);
-
-	/**
-	 * Execute a reflection.
-	 *
-	 * @param   integer   $height   reflection height
-	 * @param   integer   $opacity  reflection opacity
-	 * @param   boolean   $fade_in  TRUE to fade out, FALSE to fade in
-	 * @return  void
-	 */
-	abstract protected function _do_reflection($height, $opacity, $fade_in);
-
-	/**
-	 * Execute a watermarking.
-	 *
-	 * @param   Image    $image     watermarking Image
-	 * @param   integer  $offset_x  offset from the left
-	 * @param   integer  $offset_y  offset from the top
-	 * @param   integer  $opacity   opacity of watermark
-	 * @return  void
-	 */
-	abstract protected function _do_watermark(Image $image, $offset_x, $offset_y, $opacity);
-
-	/**
-	 * Execute a background.
-	 *
-	 * @param   integer  $r        red
-	 * @param   integer  $g        green
-	 * @param   integer  $b        blue
-	 * @param   integer  $opacity  opacity
-	 * @return void
-	 */
-	abstract protected function _do_background($r, $g, $b, $opacity);
-
-	/**
-	 * Execute a save.
-	 *
-	 * @param   string   $file     new image filename
-	 * @param   integer  $quality  quality
-	 * @return  boolean
-	 */
-	abstract protected function _do_save($file, $quality);
-
-	/**
-	 * Execute a render.
-	 *
-	 * @param   string    $type     image type: png, jpg, gif, etc
-	 * @param   integer   $quality  quality
 	 * @return  string
 	 */
-	abstract protected function _do_render($type, $quality);
+	public function __toString()
+	{
+		// __toString() must not throw an exception so we catch and only log it
+		try
+		{
+			// Render the current image
+			return $this->render();
+		}
+		catch (Exception $e)
+		{
+			if (is_object(KO7::$log))
+			{
+				// Get the text of the exception
+				$error = Image_Exception::text($e);
 
+				// Add this exception to the log
+				KO7::$log->add(Log::ERROR, $error);
+			}
+
+			// Showing any kind of error will be "inside" image data
+			return '';
+		}
+	}
+
+	/**
+	 *
+	 * Convert Image Extension to Image Type Constant
+	 *
+	 * @param string $extension	 Image Extension String
+	 *
+	 * @return integer
+	 */
+	public static function extension_to_image_type(string $extension) : int
+	{
+		// Convert to lowercase
+		$extension = strtolower($extension);
+
+		// Remove dot form extension if there
+		if (strpos($extension, '.') === 0)
+		{
+			$extension = substr($extension, 1);
+		}
+
+		// jpe and jpg are both valid extensions for jpeg
+		if (in_array($extension, [
+			'jpe',
+			'jpg',
+		]))
+		{
+			$extension = 'jpeg';
+		}
+
+		// Convert to imagetype
+		$type = 'IMAGETYPE_' . strtoupper($extension);
+
+		// Check if constant exists return if so, else Unknown image type
+		return defined($type) ? constant($type) : IMAGETYPE_UNKNOWN;
+	}
+
+	/**
+	 * Check if ImageType is supported
+	 *
+	 * @param integer $type	ImageType Constant
+	 *
+	 * @return bool
+	 */
+	abstract protected function _is_supported_type(int $type) : bool;
+
+	/**
+	 * Resize Image
+	 *
+	 * @param integer $width  New width
+	 * @param integer $height New height
+	 *
+	 * @return  bool  True on successful resize, false otherwise
+	 */
+	abstract protected function _do_resize($width, $height) : bool;
+
+	/**
+	 * Crop image.
+	 *
+	 * @param integer $width    New width
+	 * @param integer $height   New height
+	 * @param integer $offset_x Offset from the left
+	 * @param integer $offset_y Offset from the top
+	 *
+	 * @return  bool  True on successful crop, false otherwise
+	 */
+	abstract protected function _do_crop($width, $height, $offset_x, $offset_y) : bool;
+
+	/**
+	 * Rotate image
+	 *
+	 * @param integer $degrees Degrees to rotate
+	 *
+	 * @return  bool  True on successful rotation, false otherwise
+	 */
+	abstract protected function _do_rotate($degrees) : bool;
+
+	/**
+	 * Flip the Image
+	 *
+	 * @param integer $direction Direction to flip
+	 *
+	 * @return  bool True on successful flip, false otherwise
+	 */
+	abstract protected function _do_flip($direction) : bool;
+
+	/**
+	 * Sharpen Image
+	 *
+	 * @param integer $amount Amount to sharpen (sigma)
+	 *
+	 * @return  bool True on successful sharpen, false otherwise
+	 */
+	abstract protected function _do_sharpen($amount) : bool;
+
+	/**
+	 * Create an image reflection effect
+	 *
+	 * @param integer $height  Reflection height
+	 * @param integer $opacity Reflection opacity
+	 * @param boolean $fade_in TRUE to fade out, FALSE to fade in
+	 *
+	 * @return  bool True if reflection applied successful, false otherwise
+	 */
+	abstract protected function _do_reflection($height, $opacity, $fade_in) : bool;
+
+	/**
+	 * Watermark image.
+	 *
+	 * @param Image   $image    The Watermark (has to be an Image)
+	 * @param integer $offset_x Offset from the left
+	 * @param integer $offset_y Offset from the top
+	 * @param integer $opacity  Opacity of watermark
+	 *
+	 * @return  bool True if Watermark applied successful, false otherwise
+	 */
+	abstract protected function _do_watermark(Image $image, $offset_x, $offset_y, $opacity) : bool;
+
+	/**
+	 * Change / Add image background (RGB)
+	 *
+	 * @param integer $r       Red
+	 * @param integer $g       Green
+	 * @param integer $b       Blue
+	 * @param integer $opacity Opacity of background
+	 *
+	 * @return  bool True if background applied successful, false otherwise
+	 */
+	abstract protected function _do_background($r, $g, $b, $opacity) : bool;
+
+	/**
+	 * Save the image
+	 *
+	 * @param string  $file    New image filename
+	 * @param integer $quality Quality
+	 *
+	 * @return  bool True if saved successful, false otherwise
+	 */
+	abstract protected function _do_save($file, $quality) : bool;
+
+	/**
+	 * Render the Image
+	 *
+	 * @param string  $type    Image type: png, jpg, gif, etc
+	 * @param integer $quality Image Quality
+	 *
+	 * @return  string
+	 */
+	abstract protected function _do_render($type, $quality) : string;
+
+	/**
+	 * Check if all requirements for the driver to work properly are met.
+	 *
+	 * @return bool
+	 */
+	abstract public static function check() : bool;
 }

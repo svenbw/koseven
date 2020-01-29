@@ -7,7 +7,7 @@
  * @author	   Koseven Team, Paul Banks, BRMatt <matthew@sigswitch.com>
  * @copyright  (c) 2007-2012 Kohana Team
  * @copyright  (c) 2016-2018 Koseven Team
- * @license    https://koseven.ga/LICENSE.md
+ * @license    https://koseven.dev/LICENSE
  *
  * @codeCoverageIgnore Basic Test Suite / PHPUnit Test loader. Individual functions tested by there self.
  */

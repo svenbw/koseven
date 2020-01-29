@@ -4,7 +4,7 @@ Modules are simply an addition to the [Cascading Filesystem](files).  A module c
 
 ## Where to find modules
 
-You can find them on our [Website](https://koseven.ga/modules.html) or our [GithHub](https://github.com/koseven/koseven.ga/blob/master/modules.md)
+You can find them on our [Website](https://koseven.dev/modules.html) or our [GithHub](https://github.com/koseven/koseven.dev/blob/master/modules.md)
 
 ## Enabling modules
 

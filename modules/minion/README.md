@@ -59,4 +59,4 @@ Feel free to contribute tests(!), they can be found in the `tests/minion` direct
 
 ## License
 
-This is licensed under the [same license as KO7](http://koseven.ga/license).
+This is licensed under the [same license as KO7](http://koseven.dev/license).

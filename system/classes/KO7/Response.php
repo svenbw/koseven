@@ -6,9 +6,10 @@
  *
  * @package    KO7
  * @category   Base
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  * @since      3.1.0
  */
 class KO7_Response implements HTTP_Response {
@@ -158,15 +159,26 @@ class KO7_Response implements HTTP_Response {
 
 	/**
 	 * Gets or sets the body of the response
+     *
+     * @param mixed $content   Content of body
 	 *
 	 * @return  mixed
 	 */
 	public function body($content = NULL)
 	{
 		if ($content === NULL)
-			return $this->_body;
+        {
+            return $this->_body;
+        }
 
-		$this->_body = (string) $content;
+		// Cast scalar types or objects (with __toString method) to string
+		if (is_scalar($content) || (is_object($content) && method_exists($content, '__toString')))
+        {
+            $content = (string)$content;
+        }
+
+        $this->_body = $content;
+
 		return $this;
 	}
 
@@ -204,7 +216,8 @@ class KO7_Response implements HTTP_Response {
 	 *      $status = $response->status();
 	 *
 	 * @param   integer  $status Status to set to this response
-	 * @return  mixed
+	 *
+	 * @return  KO7_Response|int|boolean	acting as setter \ acting as getter \ false on invalid status code
 	 */
 	public function status($status = NULL)
 	{
@@ -212,15 +225,12 @@ class KO7_Response implements HTTP_Response {
 		{
 			return $this->_status;
 		}
-		elseif (array_key_exists($status, Response::$messages))
+		if (array_key_exists($status, Response::$messages))
 		{
 			$this->_status = (int) $status;
 			return $this;
 		}
-		else
-		{
-			throw new KO7_Exception(__METHOD__.' unknown status value : :value', [':value' => $status]);
-		}
+		return false;
 	}
 
 	/**
@@ -613,8 +623,8 @@ class KO7_Response implements HTTP_Response {
 	{
 		if ( ! $this->_header->offsetExists('content-type'))
 		{
-			// Add the default Content-Type header if required
-			$this->_header['content-type'] = KO7::$content_type.'; charset='.KO7::$charset;
+            // Add the default Content-Type header if required
+            $this->_header['content-type'] = KO7::$content_type.'; charset='.KO7::$charset;
 		}
 
 		// Set the content length

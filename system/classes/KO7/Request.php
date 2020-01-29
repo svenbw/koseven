@@ -5,9 +5,10 @@
  *
  * @package    KO7
  * @category   Base
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_Request implements HTTP_Request {
 
@@ -263,7 +264,7 @@ class KO7_Request implements HTTP_Request {
 			}
 			else
 			{
-				// If you ever see this error, please report an issue at http://koseven.ga/projects/KO7/issues
+				// If you ever see this error, please report an issue at http://koseven.dev/projects/KO7/issues
 				// along with any relevant information about your web server setup. Thanks!
 				throw new KO7_Exception('Unable to detect the URI using PATH_INFO, REQUEST_URI, PHP_SELF or REDIRECT_URL');
 			}
@@ -332,104 +333,6 @@ class KO7_Request implements HTTP_Request {
 	public static function user_agent($value)
 	{
 		return Text::user_agent(Request::$user_agent, $value);
-	}
-
-	/**
-	 * Returns the accepted content types. If a specific type is defined,
-	 * the quality of that type will be returned.
-	 *
-	 *     $types = Request::accept_type();
-	 *
-	 * [!!] Deprecated in favor of using [HTTP_Header::accepts_at_quality].
-	 *
-	 * @deprecated  since version 3.3.0
-	 * @param   string  $type Content MIME type
-	 * @return  mixed   An array of all types or a specific type as a string
-	 * @uses    Request::_parse_accept
-	 */
-	public static function accept_type($type = NULL)
-	{
-		static $accepts;
-
-		if ($accepts === NULL)
-		{
-			// Parse the HTTP_ACCEPT header
-			$accepts = Request::_parse_accept($_SERVER['HTTP_ACCEPT'], ['*/*' => 1.0]);
-		}
-
-		if (isset($type))
-		{
-			// Return the quality setting for this type
-			return isset($accepts[$type]) ? $accepts[$type] : $accepts['*/*'];
-		}
-
-		return $accepts;
-	}
-
-	/**
-	 * Returns the accepted languages. If a specific language is defined,
-	 * the quality of that language will be returned. If the language is not
-	 * accepted, FALSE will be returned.
-	 *
-	 *     $langs = Request::accept_lang();
-	 *
-	 * [!!] Deprecated in favor of using [HTTP_Header::accepts_language_at_quality].
-	 *
-	 * @deprecated  since version 3.3.0
-	 * @param   string  $lang  Language code
-	 * @return  mixed   An array of all types or a specific type as a string
-	 * @uses    Request::_parse_accept
-	 */
-	public static function accept_lang($lang = NULL)
-	{
-		static $accepts;
-
-		if ($accepts === NULL)
-		{
-			// Parse the HTTP_ACCEPT_LANGUAGE header
-			$accepts = Request::_parse_accept($_SERVER['HTTP_ACCEPT_LANGUAGE']);
-		}
-
-		if (isset($lang))
-		{
-			// Return the quality setting for this lang
-			return isset($accepts[$lang]) ? $accepts[$lang] : FALSE;
-		}
-
-		return $accepts;
-	}
-
-	/**
-	 * Returns the accepted encodings. If a specific encoding is defined,
-	 * the quality of that encoding will be returned. If the encoding is not
-	 * accepted, FALSE will be returned.
-	 *
-	 *     $encodings = Request::accept_encoding();
-	 *
-	 * [!!] Deprecated in favor of using [HTTP_Header::accepts_encoding_at_quality].
-	 *
-	 * @deprecated  since version 3.3.0
-	 * @param   string  $type Encoding type
-	 * @return  mixed   An array of all types or a specific type as a string
-	 * @uses    Request::_parse_accept
-	 */
-	public static function accept_encoding($type = NULL)
-	{
-		static $accepts;
-
-		if ($accepts === NULL)
-		{
-			// Parse the HTTP_ACCEPT_LANGUAGE header
-			$accepts = Request::_parse_accept($_SERVER['HTTP_ACCEPT_ENCODING']);
-		}
-
-		if (isset($type))
-		{
-			// Return the quality setting for this type
-			return isset($accepts[$type]) ? $accepts[$type] : FALSE;
-		}
-
-		return $accepts;
 	}
 
 	/**
@@ -601,6 +504,12 @@ class KO7_Request implements HTTP_Request {
 	 * @var  string  controller to be executed
 	 */
 	protected $_controller;
+
+    /**
+     * Requested Format (json, xml, html)
+     * @var string
+     */
+    protected $_format;
 
 	/**
 	 * @var  string  action to be executed in the controller
@@ -786,6 +695,25 @@ class KO7_Request implements HTTP_Request {
 		return isset($this->_params[$key]) ? $this->_params[$key] : $default;
 	}
 
+    /**
+     * Get / Set requested format
+     *
+     * @param string|null $format e.g JSON, XML, etc...
+     *
+     * @return $this|string
+     */
+	public function format(?string $format = NULL)
+    {
+        if ($format === NULL)
+        {
+            return $this->_format;
+        }
+
+        $this->_format = $format;
+
+        return $this;
+    }
+
 	/**
 	 * Sets and gets the referrer from the request.
 	 *
@@ -966,6 +894,12 @@ class KO7_Request implements HTTP_Request {
 					$this->_directory = $params['directory'];
 				}
 
+				// Requested format e.g XML, JSON, etc..
+				if (isset($params['format']))
+                {
+                    $this->_format = $params['format'];
+                }
+
 				// Store the controller
 				$this->_controller = $params['controller'];
 
@@ -1052,8 +986,14 @@ class KO7_Request implements HTTP_Request {
 			return $this->_method;
 		}
 
+		// Method is always uppercase
+		$method = strtoupper($method);
+
+		// Allow overriding method
+		$override = $this->headers('X-HTTP-Method-Override');
+
 		// Act as a setter
-		$this->_method = strtoupper($method);
+		$this->_method = $override && defined('HTTP_REQUEST::' . $override) ? $override : $method;
 
 		return $this;
 	}

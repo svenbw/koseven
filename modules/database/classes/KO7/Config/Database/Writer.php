@@ -14,9 +14,10 @@
  *
  * @package    KO7
  * @category   Configuration
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_Config_Database_Writer extends Config_Database_Reader implements KO7_Config_Writer
 {

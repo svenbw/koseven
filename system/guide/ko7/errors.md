@@ -62,3 +62,24 @@ To register error pages for these, using 404 as an example:
         }
 
     }
+
+## Deprecation "Error"
+Koseven has a built-in function for deprecating code. If one of the 
+deprecated function is used, it get's logged into your configured Log File.
+
+It accepts two parameters:
+1. (required) version number the function got deprecated in e.g "4.0"
+2. (optional) replacement function
+
+Here is a example of deprecating function "test" with function "test2" as replacement 
+
+    public static function test
+    {
+        // This got deprecated in v. 4.0
+        KO7::deprecate('4.0', 'test2');
+    }
+    
+The above will log the following line every time the "test" function get's called:
+
+    YYYY-MM-DD HH:MM:SS --- WARNING: Function "test" inside class <class> is deprecated since version 4.0 and will be removed within the next major release. Please consider replacing it with "test2". in <file>:<line>
+    

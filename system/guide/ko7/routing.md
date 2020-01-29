@@ -133,32 +133,6 @@ There are countless other possibilities for routes. Here are some more examples:
         'controller' => 'Feeds',
         'action' => 'status',
       ));
-    
-    /*
-     * Static pages
-     */
-    Route::set('static', '<path>.html',
-      array(
-        'path' => '[a-zA-Z0-9_/]+',
-      ))
-      ->defaults(array(
-        'controller' => 'Static',
-        'action' => 'index',
-      ));
-      
-    /*
-     * You don't like slashes?
-     *   EditGallery:bahamas
-     *   Watch:wakeboarding
-     */
-    Route::set('gallery', '<action>(<controller>):<id>',
-      array(
-        'controller' => '[A-Z][a-z]++',
-        'action'     => '[A-Z][a-z]++',
-      ))
-      ->defaults(array(
-        'controller' => 'Slideshow',
-      ));
       
     /*
      * Quick search

@@ -7,10 +7,10 @@
  *
  * @package    KO7/Encrypt
  * @category   Test
- * @author     Koseven Team
+ *
  * @copyright  (c) 2007-2012 Kohana Team
  * @copyright  (c) 2016-2018 Koseven Team
- * @license    https://koseven.ga/LICENSE.md
+ * @license    https://koseven.dev/LICENSE
  */
 class EncryptMcryptTest extends EncryptTestBase {
 
@@ -51,11 +51,21 @@ class EncryptMcryptTest extends EncryptTestBase {
 		// Init
 		extract($vectors);
 
+		if ($cipher !== NULL)
+		{
+			$cipher = constant($cipher);
+		}
+
+		if ($mode !== NULL)
+		{
+			$mode = constant($mode);
+		}
+
 		$this->set_config([
 			'type' => 'mcrypt',
 			'key' => $key,
-			'cipher' => constant($cipher),
-			'mode' => constant($mode),
+			'cipher' => $cipher,
+			'mode' => $mode,
 		]);
 
 		// Test encryption with known answers

@@ -5,9 +5,10 @@
  *
  * @package    KO7
  * @category   Configuration
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_Config_File_Reader implements KO7_Config_Reader {
 
@@ -30,7 +31,7 @@ class KO7_Config_File_Reader implements KO7_Config_Reader {
 	 */
 	public function __construct($directory = 'config')
 	{
-		$this->_directory = trim($directory, '/');
+		$this->_directory = trim($directory, '\/');
 	}
 
 	/**
@@ -39,11 +40,10 @@ class KO7_Config_File_Reader implements KO7_Config_Reader {
 	 *     $config->load($name);
 	 *
 	 * @param   string  $group  configuration group name
-	 *
 	 * @return  array   Configuration
 	 * @throws KO7_Exception
 	 */
-	public function load($group) : array
+	public function load($group): array
 	{
 		// Check caches and start Profiling
 		if (KO7::$caching && isset(self::$_cache[$group]))
@@ -54,7 +54,7 @@ class KO7_Config_File_Reader implements KO7_Config_Reader {
 			// @codeCoverageIgnoreEnd
 		}
 
-		if (KO7::$profiling && class_exists('Profiler', FALSE))
+		if (KO7::$profiling && class_exists('Profiler'))
 		{
 			// Start a new benchmark
 			$benchmark = Profiler::start('Config', __FUNCTION__);
@@ -64,19 +64,24 @@ class KO7_Config_File_Reader implements KO7_Config_Reader {
 		$config = [];
 
 		// Loop through paths. Notice: array_reverse, so system files get overwritten by app files
-		foreach (array_reverse(KO7::include_paths()) as $path) {
-
+		foreach (array_reverse(KO7::include_paths()) as $path)
+		{
 			// Build path
-			$file = $path.'config'. DIRECTORY_SEPARATOR . $group;
+			$file = $path.$this->_directory.DIRECTORY_SEPARATOR.$group;
 			$value = FALSE;
-
 			// Try .php .json and .yaml extensions and parse contents with PHP support
-			if (file_exists($path = $file.'.php')) {
+			if (file_exists($path = $file.'.php'))
+			{
 				$value = KO7::load($path);
-			} elseif (file_exists($path = $file.'.json')) {
+			}
+			elseif (file_exists($path = $file.'.json'))
+			{
 				$value = json_decode($this->read_from_ob($path), true);
-			} elseif (file_exists($path = $file.'.yaml')) {
-				if ( ! extension_loaded('yaml')) {
+			}
+			elseif (file_exists($path = $file.'.yaml'))
+			{
+				if ( ! extension_loaded('yaml'))
+				{
 					// @codeCoverageIgnoreStart
 					throw new KO7_Exception('PECL Yaml Extension is required in order to parse YAML Config');
 					// @codeCoverageIgnoreEnd
@@ -85,7 +90,8 @@ class KO7_Config_File_Reader implements KO7_Config_Reader {
 			}
 
 			// Merge config
-			if ($value !== FALSE) {
+			if ($value !== FALSE)
+			{
 				$config = Arr::merge($config, $value);
 			}
 		}
@@ -111,7 +117,6 @@ class KO7_Config_File_Reader implements KO7_Config_Reader {
 	 * Used to support <?php ?> tags and code inside Configurations
 	 *
 	 * @param  string $path Path to File
-	 *
 	 * @return false|string
 	 * @codeCoverageIgnore
 	 */

@@ -12,9 +12,10 @@
  *
  * @package    KO7
  * @category   Helpers
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  * @uses       KO7::cache
  */
 class KO7_Fragment {

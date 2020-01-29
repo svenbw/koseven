@@ -1,119 +1,88 @@
 <?php
 /**
- * [Request_Client_External] HTTP driver performs external requests using the
- * php-http extension. To use this driver, ensure the following is completed
- * before executing an external request- ideally in the application bootstrap.
+ * HTTP driver performs external requests using the
+ * pecl_http extension.
  *
- * @example
+ * NOTE: This driver is not used by default. To use it as default call:
  *
- *       // In application bootstrap
- *       Request_Client_External::$client = 'Request_Client_HTTP';
+ * @package        KO7\Request
  *
- * @package    KO7
- * @category   Base
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
- * @uses       [PECL HTTP](http://php.net/manual/en/book.http.php)
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license        https://koseven.dev/LICENSE
+ *
  */
 class KO7_Request_Client_HTTP extends Request_Client_External {
-
-	/**
-	 * Creates a new `Request_Client` object,
-	 * allows for dependency injection.
-	 *
-	 * @param   array    $params Params
-	 * @throws  Request_Exception
-	 */
-	public function __construct(array $params = [])
-	{
-		// Check that PECL HTTP supports requests
-		if ( ! http_support(HTTP_SUPPORT_REQUESTS))
-		{
-			throw new Request_Exception('Need HTTP request support!');
-		}
-
-		// Carry on
-		parent::__construct($params);
-	}
-
-	/**
-	 * @var     array     curl options
-	 * @link    http://www.php.net/manual/function.curl-setopt
-	 */
-	protected $_options = [];
 
 	/**
 	 * Sends the HTTP message [Request] to a remote server and processes
 	 * the response.
 	 *
-	 * @param   Request   $request  request to send
-	 * @param   Response  $request  response to send
-	 * @return  Response
+	 * @param Request  $request  request to send
+	 * @param Response $response response to send
+	 *
+	 * @throws Request_Exception
+	 *
+	 * @return Response
 	 */
-	public function _send_message(Request $request, Response $response)
+	public function _send_message(Request $request, Response $response) : Response
 	{
-		$http_method_mapping = [
-			HTTP_Request::GET     => HTTPRequest::METH_GET,
-			HTTP_Request::HEAD    => HTTPRequest::METH_HEAD,
-			HTTP_Request::POST    => HTTPRequest::METH_POST,
-			HTTP_Request::PUT     => HTTPRequest::METH_PUT,
-			HTTP_Request::DELETE  => HTTPRequest::METH_DELETE,
-			HTTP_Request::OPTIONS => HTTPRequest::METH_OPTIONS,
-			HTTP_Request::TRACE   => HTTPRequest::METH_TRACE,
-			HTTP_Request::CONNECT => HTTPRequest::METH_CONNECT,
-		];
+		// Instance a new Client
+		$client = new http\Client;
 
-		// Create an http request object
-		$http_request = new HTTPRequest($request->uri(), $http_method_mapping[$request->method()]);
+		// Process cookies
+		if ($cookies = $request->cookie())
+		{
+			$client->setCookies($cookies);
+		}
 
+		// Instance HTTP Request Object
+		$http_request = new \http\Client\Request($request->method(), $request->uri());
+
+		// Set custom cURL options
 		if ($this->_options)
 		{
-			// Set custom options
 			$http_request->setOptions($this->_options);
 		}
 
 		// Set headers
-		$http_request->setHeaders($request->headers()->getArrayCopy());
+		if ( ! empty($headers = $request->headers()->getArrayCopy()))
+		{
+			$http_request->setHeaders($headers);
+		}
 
-		// Set cookies
-		$http_request->setCookies($request->cookie());
-
-		// Set query data (?foo=bar&bar=foo)
-		$http_request->setQueryData($request->query());
+		// Set query (?foo=bar&bar=foo)
+		if ($query = $request->query())
+		{
+			$http_request->setQuery($query);
+		}
 
 		// Set the body
-		if ($request->method() == HTTP_Request::PUT)
+		// This will also add a Content-Type: application/x-www-form-urlencoded header unless you override it
+		if ($body = $request->body())
 		{
-			$http_request->addPutData($request->body());
-		}
-		else
-		{
-			$http_request->setBody($request->body());
+			$http_request->getBody()->append($body);
 		}
 
+		// Execute call, will throw an Runtime Exception if a stream is not available
 		try
 		{
-			$http_request->send();
+			$client->enqueue($http_request)->send();
 		}
-		catch (HTTPRequestException $e)
-		{
-			throw new Request_Exception($e->getMessage());
-		}
-		catch (HTTPMalformedHeaderException $e)
-		{
-			throw new Request_Exception($e->getMessage());
-		}
-		catch (HTTPEncodingException $e)
+		catch (\http\Exception\RuntimeException $e)
 		{
 			throw new Request_Exception($e->getMessage());
 		}
 
+		// Parse Response
+		$http_response = $client->getResponse();
+
 		// Build the response
-		$response->status($http_request->getResponseCode())
-			->headers($http_request->getResponseHeader())
-			->cookie($http_request->getResponseCookies())
-			->body($http_request->getResponseBody());
+		$response
+			->status($http_response->getResponseCode())
+			->headers($http_response->getHeaders())
+			->cookie($http_response->getCookies())
+			->body($http_response->getBody());
 
 		return $response;
 	}

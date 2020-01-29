@@ -3,9 +3,10 @@
  * Codebench — A benchmarking module.
  *
  * @package    koseven/Codebench
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ * 
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 ?>
 <!DOCTYPE html>
@@ -252,7 +253,7 @@
 	<p id="footer">
 		Page executed in <strong><?php echo round(microtime(TRUE) - KO7_START_TIME, 2) ?>&nbsp;s</strong>
 		using <strong><?php echo Text::widont(Text::bytes(memory_get_usage(), 'MB')) ?></strong> of memory.<br />
-		<a href="http://github.com/kohana/codebench">Codebench</a>, a <a href="http://koseven.ga/">KO7</a> module
+		<a href="http://github.com/kohana/codebench">Codebench</a>, a <a href="http://koseven.dev/">KO7</a> module
 		by <a href="http://www.geertdedeckere.be/article/introducing-codebench">Geert De Deckere</a>.
 	</p>
 

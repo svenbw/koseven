@@ -4,9 +4,10 @@
  *
  * @package    KO7
  * @category   Security
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_Validation implements ArrayAccess {
 
@@ -120,18 +121,6 @@ class KO7_Validation implements ArrayAccess {
 		$copy->_data = $array;
 
 		return $copy;
-	}
-
-	/**
-	 * Returns the array representation of the current object.
-	 * Deprecated in favor of [Validation::data]
-	 *
-	 * @deprecated
-	 * @return  array
-	 */
-	public function as_array()
-	{
-		return $this->_data;
 	}
 
 	/**

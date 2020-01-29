@@ -2,6 +2,10 @@
 
 It is encouraged that you follow Koseven's coding style. This makes code more readable and allows for easier code sharing and contributing. 
 
+## General
+
+Since Short open tags `<?` will be deprecated in [7.4 and removed in 8.0](https://wiki.php.net/rfc/deprecate_php_short_tags) please only use `<?php`.
+
 ## Class Names and File Location
 
 Class names in Koseven follow a strict convention to facilitate [autoloading](autoloading). Class names should have uppercase first letters with underscores to separate words. Underscores are significant as they directly reflect the file location in the filesystem.

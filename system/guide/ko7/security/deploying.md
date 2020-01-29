@@ -1,26 +1,21 @@
-Changes that should happen when you deploy. (Production)
-
-## Setting up a production environment
+# Deploying (Setting up a production environment)
 
 There are a few things you'll want to do with your application before moving into production.
 
-1. See the [Bootstrap page](bootstrap) in the docs.
-   This covers most of the global settings that would change between environments.
-   As a general rule, you should enable caching and disable profiling ([KO7::init] settings) for production sites.
-   [Route::cache] can also help if you have a lot of routes.
-2. Turn on APC or some kind of opcode caching.
-   This is the single easiest performance boost you can make to PHP itself. The more complex your application, the bigger the benefit of using opcode caching.
+## Bootstrap
 
-		/**
-		 * Set the environment string by the domain (defaults to KO7::DEVELOPMENT).
-		 */
-		KO7::$environment = ($_SERVER['SERVER_NAME'] !== 'localhost') ? KO7::PRODUCTION : KO7::DEVELOPMENT;
-		/**
-		 * Initialise Kohana based on environment
-		 */
-		KO7::init(array(
-			'base_url'   => '/',
-			'index_file' => FALSE,
-			'profile'    => KO7::$environment !== KO7::PRODUCTION,
-			'caching'    => KO7::$environment === KO7::PRODUCTION,
-		));
+The `bootstrap.php` file covers most of the global settings that would change between environments.
+
+Generally you should make the following 3 changes:
+
+1. Setting the [KO7::$environment](../api/KO7#property-environment) variable to `PRODUCTION`
+2. Enable caching and disable profiling in the [KO7::init](../api/KO7#init) call
+3. Change the [Cookie::$salt](../api/Cookie#property-salt)
+
+## Configuration
+
+Change the `url.php` configuration and edit the `trusted_hosts` section.
+Add your production environment domain(s) into the list and remove the developing environment domain(s).
+
+Also check your other configuration files (for example if you use the Database Module check your `database.php` 
+configuration file).

@@ -3,31 +3,31 @@
 /**
  * The directory in which your application specific resources are located.
  * The application directory must contain the bootstrap.php file.
- *
- * @link http://koseven.ga/guide/about.install#application
  */
 $application = 'application';
 
 /**
  * The directory in which your modules are located.
- *
- * @link http://koseven.ga/guide/about.install#modules
  */
 $modules = 'modules';
 
 /**
  * The directory in which the KO7 resources are located. The system
  * directory must contain the classes/ko7.php file.
- *
- * @link http://koseven.ga/guide/about.install#system
  */
 $system = 'system';
+
+/**
+ * The directory in which the KO7 public files are located. The public
+ * directory contains for example the index.php and .htaccess files.
+ */
+$public = 'public';
 
 /**
  * The default extension of resource files. If you change this, all resources
  * must be renamed to use the new extension.
  *
- * @link http://koseven.ga/guide/about.install#ext
+ * @link http://koseven.dev/guide/about.install#ext
  */
 define('EXT', '.php');
 
@@ -38,7 +38,7 @@ define('EXT', '.php');
  * this bootstrap file somewhere else then you'll need to modify this value to
  * compensate.
  */
-define('DOCROOT', realpath(__DIR__.'/../../').DIRECTORY_SEPARATOR);
+define('DOCROOT', dirname(__DIR__, 2).DIRECTORY_SEPARATOR);
 
 /**
  * Set the PHP error reporting level. If you set this in php.ini, you remove this.
@@ -59,34 +59,41 @@ error_reporting(E_ALL & ~E_DEPRECATED);
  * End of standard configuration! Changing any of the code below should only be
  * attempted by those with a working knowledge of KO7 internals.
  *
- * @link http://koseven.ga/guide/using.configuration
+ * @link http://koseven.dev/guide/using.configuration
  */
 
 // Make the application relative to the docroot
-if ( ! is_dir($application) AND is_dir(DOCROOT.$application))
+if ( ! is_dir($application) && is_dir(DOCROOT.$application))
 {
 	$application = DOCROOT.$application;
 }
 
 // Make the modules relative to the docroot
-if ( ! is_dir($modules) AND is_dir(DOCROOT.$modules))
+if ( ! is_dir($modules) && is_dir(DOCROOT.$modules))
 {
 	$modules = DOCROOT.$modules;
 }
 
 // Make the system relative to the docroot
-if ( ! is_dir($system) AND is_dir(DOCROOT.$system))
+if ( ! is_dir($system) && is_dir(DOCROOT.$system))
 {
 	$system = DOCROOT.$system;
+}
+
+// Make the public relative to the docroot
+if ( ! is_dir($public) && is_dir(DOCROOT.$public))
+{
+	$public = DOCROOT.$public;
 }
 
 // Define the absolute paths for configured directories
 define('APPPATH', realpath($application).DIRECTORY_SEPARATOR);
 define('MODPATH', realpath($modules).DIRECTORY_SEPARATOR);
 define('SYSPATH', realpath($system).DIRECTORY_SEPARATOR);
+define('PUBPATH', realpath($public).DIRECTORY_SEPARATOR);
 
 // Clean up the configuration vars
-unset($application, $modules, $system);
+unset($application, $modules, $system, $public);
 
 /**
  * Define the start time of the application, used for profiling.

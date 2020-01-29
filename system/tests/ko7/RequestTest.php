@@ -9,10 +9,11 @@
  *
  * @package    KO7
  * @category   Tests
- * @author     Kohana Team
+ *
  * @author     BRMatt <matthew@sigswitch.com>
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_RequestTest extends Unittest_TestCase
 {
@@ -263,49 +264,6 @@ class KO7_RequestTest extends Unittest_TestCase
 		$this->assertEquals($request->route(), NULL);
 	}
 
-	/**
-	 * Tests Request::accept_type()
-	 *
-	 * @test
-	 * @covers Request::accept_type
-	 */
-	public function test_accept_type()
-	{
-		$this->assertEquals(['*/*' => 1], Request::accept_type());
-	}
-
-	/**
-	 * Provides test data for Request::accept_lang()
-	 * @return array
-	 */
-	public function provider_accept_lang()
-	{
-		return [
-			['en-us', 1, ['_SERVER' => ['HTTP_ACCEPT_LANGUAGE' => 'en-us,en;q=0.5']]],
-			['en-us', 1, ['_SERVER' => ['HTTP_ACCEPT_LANGUAGE' => 'en-gb']]],
-			['en-us', 1, ['_SERVER' => ['HTTP_ACCEPT_LANGUAGE' => 'sp-sp;q=0.5']]]
-		];
-	}
-
-	/**
-	 * Tests Request::accept_lang()
-	 *
-	 * @test
-	 * @covers Request::accept_lang
-	 * @dataProvider provider_accept_lang
-	 * @param array $params Query string
-	 * @param string $expected Expected result
-	 * @param array $enviroment Set environment
-	 */
-	public function test_accept_lang($params, $expected, $enviroment)
-	{
-		$this->setEnvironment($enviroment);
-
-		$this->assertEquals(
-			$expected,
-			Request::accept_lang($params)
-		);
-	}
 
 	/**
 	 * Provides test data for Request::url()
@@ -774,7 +732,7 @@ class KO7_RequestTest extends Unittest_TestCase
 
 		return [
 			[
-				new Request('http://koseven.ga/'),
+				new Request('http://koseven.dev/'),
 				$internal_client,
 				$internal_client
 			],
@@ -870,7 +828,7 @@ class KO7_RequestTest_Header_Spying_Request_Client_External extends Request_Clie
 {
 	private $headers;
 
-	protected function _send_message(\Request $request, \Response $response)
+	protected function _send_message(Request $request, Response $response) : Response
 	{
 		$this->headers = $request->headers();
 

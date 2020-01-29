@@ -1,20 +1,16 @@
 <?php
 /**
- * Request Client for internal execution
+ * Request Client for Internal Execution
  *
- * @package    KO7
- * @category   Base
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
- * @since      3.1.0
+ * @package        KO7\Base
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license        https://koseven.dev/LICENSE
+ *
+ * @since          3.1.0
  */
 class KO7_Request_Client_Internal extends Request_Client {
-
-	/**
-	 * @var    array
-	 */
-	protected $_previous_environment;
 
 	/**
 	 * Processes the request, executing the controller action that handles this
@@ -22,11 +18,10 @@ class KO7_Request_Client_Internal extends Request_Client {
 	 *
 	 *     $request->execute();
 	 *
-	 * @param   Request $request
+	 * @param Request  $request		Request Object
+	 * @param Response $response	Response Object
+	 *
 	 * @return  Response
-	 * @throws  KO7_Exception
-	 * @uses    [KO7::$profiling]
-	 * @uses    [Profiler]
 	 */
 	public function execute_request(Request $request, Response $response)
 	{
@@ -42,18 +37,18 @@ class KO7_Request_Client_Internal extends Request_Client {
 		if ($directory)
 		{
 			// Add the directory name to the class prefix
-			$prefix .= str_replace(['\\', '/'], '_', trim($directory, '/')).'_';
+			$prefix .= str_replace(['\\', '/'], '_', trim($directory, '/')) . '_';
 		}
 
 		if (KO7::$profiling)
 		{
 			// Set the benchmark name
-			$benchmark = '"'.$request->uri().'"';
+			$benchmark = '"' . $request->uri() . '"';
 
 			if ($request !== Request::$initial AND Request::$current)
 			{
 				// Add the parent request uri
-				$benchmark .= ' « "'.Request::$current->uri().'"';
+				$benchmark .= ' « "' . Request::$current->uri() . '"'; // @codeCoverageIgnore
 			}
 
 			// Start benchmarking
@@ -68,23 +63,21 @@ class KO7_Request_Client_Internal extends Request_Client {
 
 		try
 		{
-			if ( ! class_exists($prefix.$controller))
+			if ( ! class_exists($prefix . $controller))
 			{
-				throw HTTP_Exception::factory(404,
-					'The requested URL :uri was not found on this server.',
-					[':uri' => $request->uri()]
-				)->request($request);
+				throw HTTP_Exception::factory(404, 'The requested URL :uri was not found on this server.', [
+					':uri' => $request->uri()
+				])->request($request);
 			}
 
 			// Load the controller using reflection
-			$class = new ReflectionClass($prefix.$controller);
+			$class = new ReflectionClass($prefix . $controller);
 
 			if ($class->isAbstract())
 			{
-				throw new KO7_Exception(
-					'Cannot create instances of abstract :controller',
-					[':controller' => $prefix.$controller]
-				);
+				throw new KO7_Exception('Cannot create instances of abstract :controller', [
+					':controller' => $prefix . $controller
+				]);
 			}
 
 			// Create a new instance of the controller
@@ -104,7 +97,7 @@ class KO7_Request_Client_Internal extends Request_Client {
 			// Store the request context in the Exception
 			if ($e->request() === NULL)
 			{
-				$e->request($request);
+				$e->request($request); // @codeCoverageIgnore
 			}
 
 			// Get the response via the Exception
@@ -128,5 +121,4 @@ class KO7_Request_Client_Internal extends Request_Client {
 		// Return the response
 		return $response;
 	}
-
 }

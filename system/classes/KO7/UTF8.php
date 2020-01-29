@@ -16,8 +16,9 @@
  *
  * @package    KO7
  * @category   Base
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
  * @copyright  (c) 2005 Harry Fuecks
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
  */
@@ -26,7 +27,7 @@ class KO7_UTF8 {
 	/**
 	 * @var  boolean  Does the server support UTF-8 natively?
 	 */
-	public static $server_utf8 = NULL;
+	public static $server_utf8;
 
 	/**
 	 * @var  array  List of called methods that have had their required file included.
@@ -40,50 +41,46 @@ class KO7_UTF8 {
 	 *
 	 *     UTF8::clean($_GET); // Clean GET data
 	 *
-	 * @param   mixed   $var        variable to clean
-	 * @param   string  $charset    character set, defaults to KO7::$charset
+	 * @param   mixed   $var      variable to clean
+	 * @param   string  $charset  character set, defaults to KO7::$charset
 	 * @return  mixed
-	 * @uses    UTF8::clean
 	 * @uses    UTF8::strip_ascii_ctrl
 	 * @uses    UTF8::is_ascii
 	 */
-	public static function clean($var, $charset = NULL)
+	public static function clean($var, ?string $charset = NULL)
 	{
 		if ( ! $charset)
 		{
 			// Use the application character set
 			$charset = KO7::$charset;
 		}
-
-		if (is_array($var) OR is_object($var))
+		
+		if (is_iterable($var))
 		{
+			$vars = [];
 			foreach ($var as $key => $val)
 			{
-				// Recursion!
-				$var[UTF8::clean($key)] = UTF8::clean($val);
+				$vars[UTF8::clean($key, $charset)] = UTF8::clean($val, $charset);
 			}
+			$var = $vars;
 		}
 		elseif (is_string($var) AND $var !== '')
 		{
 			// Remove control characters
 			$var = UTF8::strip_ascii_ctrl($var);
-
 			if ( ! UTF8::is_ascii($var))
 			{
 				// Temporarily save the mb_substitute_character() value into a variable
-				$mb_substitute_character = mb_substitute_character();
-
+				$substitute_character = mb_substitute_character();
 				// Disable substituting illegal characters with the default '?' character
 				mb_substitute_character('none');
-
 				// convert encoding, this is expensive, used when $var is not ASCII
 				$var = mb_convert_encoding($var, $charset, $charset);
-
 				// Reset mb_substitute_character() value back to the original setting
-				mb_substitute_character($mb_substitute_character);
+				mb_substitute_character($substitute_character);
 			}
 		}
-
+		
 		return $var;
 	}
 
@@ -94,7 +91,7 @@ class KO7_UTF8 {
 	 *     $ascii = UTF8::is_ascii($str);
 	 *
 	 * @param   mixed   $str    string or array of strings to check
-	 * @return  boolean
+	 * @return  bool
 	 */
 	public static function is_ascii($str)
 	{
@@ -103,7 +100,7 @@ class KO7_UTF8 {
 			$str = implode($str);
 		}
 
-		return ! preg_match('/[^\x00-\x7F]/S', $str);
+		return ! preg_match('/[^\x00-\x7F]/S', (string) $str);
 	}
 
 	/**
@@ -116,7 +113,7 @@ class KO7_UTF8 {
 	 */
 	public static function strip_ascii_ctrl($str)
 	{
-		return preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+/S', '', $str);
+		return preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+/S', '', (string) $str);
 	}
 
 	/**
@@ -129,7 +126,7 @@ class KO7_UTF8 {
 	 */
 	public static function strip_non_ascii($str)
 	{
-		return preg_replace('/[^\x00-\x7F]+/S', '', $str);
+		return preg_replace('/[^\x00-\x7F]+/S', '', (string) $str);
 	}
 
 	/**
@@ -139,10 +136,10 @@ class KO7_UTF8 {
 	 *
 	 * @author  Andreas Gohr <andi@splitbrain.org>
 	 * @param   string  $str    string to transliterate
-	 * @param   integer $case   -1 lowercase only, +1 uppercase only, 0 both cases
+	 * @param   int $case   -1 lowercase only, +1 uppercase only, 0 both cases
 	 * @return  string
 	 */
-	public static function transliterate_to_ascii($str, $case = 0)
+	public static function transliterate_to_ascii($str, int $case = 0)
 	{
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -152,7 +149,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _transliterate_to_ascii($str, $case);
+		return _transliterate_to_ascii((string) $str, $case);
 	}
 
 	/**
@@ -169,7 +166,7 @@ class KO7_UTF8 {
 	public static function strlen($str)
 	{
 		if (UTF8::$server_utf8)
-			return mb_strlen($str, KO7::$charset);
+			return mb_strlen((string) $str, KO7::$charset);
 
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -179,7 +176,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _strlen($str);
+		return _strlen((string) $str);
 	}
 
 	/**
@@ -197,10 +194,10 @@ class KO7_UTF8 {
 	 * @uses    UTF8::$server_utf8
 	 * @uses    KO7::$charset
 	 */
-	public static function strpos($str, $search, $offset = 0)
+	public static function strpos($str, $search, int $offset = 0)
 	{
 		if (UTF8::$server_utf8)
-			return mb_strpos($str, $search, $offset, KO7::$charset);
+			return mb_strpos((string) $str, (string) $search, $offset, KO7::$charset);
 
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -210,7 +207,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _strpos($str, $search, $offset);
+		return _strpos((string) $str, (string) $search, $offset);
 	}
 
 	/**
@@ -222,15 +219,15 @@ class KO7_UTF8 {
 	 * @author  Harry Fuecks <hfuecks@gmail.com>
 	 * @param   string  $str    haystack
 	 * @param   string  $search needle
-	 * @param   integer $offset offset from which character in haystack to start searching
-	 * @return  integer position of needle
-	 * @return  boolean FALSE if the needle is not found
+	 * @param   int $offset offset from which character in haystack to start searching
+	 * @return  int position of needle
+	 * @return  bool FALSE if the needle is not found
 	 * @uses    UTF8::$server_utf8
 	 */
-	public static function strrpos($str, $search, $offset = 0)
+	public static function strrpos($str, $search, int $offset = 0)
 	{
 		if (UTF8::$server_utf8)
-			return mb_strrpos($str, $search, $offset, KO7::$charset);
+			return mb_strrpos((string) $str, (string) $search, $offset, KO7::$charset);
 
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -240,7 +237,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _strrpos($str, $search, $offset);
+		return _strrpos((string) $str, (string) $search, $offset);
 	}
 
 	/**
@@ -251,18 +248,19 @@ class KO7_UTF8 {
 	 *
 	 * @author  Chris Smith <chris@jalakai.co.uk>
 	 * @param   string  $str    input string
-	 * @param   integer $offset offset
-	 * @param   integer $length length limit
+	 * @param   int $offset offset
+	 * @param   int|null $length length limit
 	 * @return  string
 	 * @uses    UTF8::$server_utf8
 	 * @uses    KO7::$charset
 	 */
-	public static function substr($str, $offset, $length = NULL)
+	public static function substr($str, int $offset, ?int $length = NULL)
 	{
+		$str = (string) $str;
 		if (UTF8::$server_utf8)
-			return ($length === NULL)
-				? mb_substr($str, $offset, mb_strlen($str), KO7::$charset)
-				: mb_substr($str, $offset, $length, KO7::$charset);
+		{
+			return mb_substr($str, $offset, $length ?? mb_strlen($str, KO7::$charset), KO7::$charset);
+		}
 
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -284,10 +282,11 @@ class KO7_UTF8 {
 	 * @author  Harry Fuecks <hfuecks@gmail.com>
 	 * @param   string  $str            input string
 	 * @param   string  $replacement    replacement string
-	 * @param   integer $offset         offset
+	 * @param   int $offset         offset
+	 * @param   int|null $length         length
 	 * @return  string
 	 */
-	public static function substr_replace($str, $replacement, $offset, $length = NULL)
+	public static function substr_replace($str, $replacement, int $offset, ?int $length = NULL)
 	{
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -297,7 +296,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _substr_replace($str, $replacement, $offset, $length);
+		return _substr_replace((string) $str, (string) $replacement, $offset, $length);
 	}
 
 	/**
@@ -315,7 +314,7 @@ class KO7_UTF8 {
 	public static function strtolower($str)
 	{
 		if (UTF8::$server_utf8)
-			return mb_strtolower($str, KO7::$charset);
+			return mb_strtolower((string) $str, KO7::$charset);
 
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -325,7 +324,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _strtolower($str);
+		return _strtolower((string) $str);
 	}
 
 	/**
@@ -341,7 +340,7 @@ class KO7_UTF8 {
 	public static function strtoupper($str)
 	{
 		if (UTF8::$server_utf8)
-			return mb_strtoupper($str, KO7::$charset);
+			return mb_strtoupper((string) $str, KO7::$charset);
 
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -351,7 +350,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _strtoupper($str);
+		return _strtoupper((string) $str);
 	}
 
 	/**
@@ -374,7 +373,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _ucfirst($str);
+		return _ucfirst((string) $str);
 	}
 
 	/**
@@ -397,7 +396,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _ucwords($str);
+		return _ucwords((string) $str);
 	}
 
 	/**
@@ -409,9 +408,9 @@ class KO7_UTF8 {
 	 * @author  Harry Fuecks <hfuecks@gmail.com>
 	 * @param   string  $str1   string to compare
 	 * @param   string  $str2   string to compare
-	 * @return  integer less than 0 if str1 is less than str2
-	 * @return  integer greater than 0 if str1 is greater than str2
-	 * @return  integer 0 if they are equal
+	 * @return  int less than 0 if str1 is less than str2
+	 * @return  int greater than 0 if str1 is greater than str2
+	 * @return  int 0 if they are equal
 	 */
 	public static function strcasecmp($str1, $str2)
 	{
@@ -423,7 +422,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _strcasecmp($str1, $str2);
+		return _strcasecmp((string) $str1, (string) $str2);
 	}
 
 	/**
@@ -438,11 +437,11 @@ class KO7_UTF8 {
 	 * @param   string|array    $search     text to replace
 	 * @param   string|array    $replace    replacement text
 	 * @param   string|array    $str        subject text
-	 * @param   integer         $count      number of matched and replaced needles will be returned via this parameter which is passed by reference
+	 * @param   int         $count      number of matched and replaced needles will be returned via this parameter which is passed by reference
 	 * @return  string  if the input was a string
 	 * @return  array   if the input was an array
 	 */
-	public static function str_ireplace($search, $replace, $str, & $count = NULL)
+	public static function str_ireplace($search, $replace, $str, int & $count = 0)
 	{
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -478,7 +477,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _stristr($str, $search);
+		return _stristr((string) $str, (string) $search);
 	}
 
 	/**
@@ -490,11 +489,11 @@ class KO7_UTF8 {
 	 * @author  Harry Fuecks <hfuecks@gmail.com>
 	 * @param   string  $str    input string
 	 * @param   string  $mask   mask for search
-	 * @param   integer $offset start position of the string to examine
-	 * @param   integer $length length of the string to examine
-	 * @return  integer length of the initial segment that contains characters in the mask
+	 * @param   int|null $offset start position of the string to examine
+	 * @param   int|null $length length of the string to examine
+	 * @return  int length of the initial segment that contains characters in the mask
 	 */
-	public static function strspn($str, $mask, $offset = NULL, $length = NULL)
+	public static function strspn($str, $mask, ?int $offset = NULL, ?int $length = NULL)
 	{
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -504,7 +503,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _strspn($str, $mask, $offset, $length);
+		return _strspn((string) $str, (string) $mask, $offset, $length);
 	}
 
 	/**
@@ -516,11 +515,11 @@ class KO7_UTF8 {
 	 * @author  Harry Fuecks <hfuecks@gmail.com>
 	 * @param   string  $str    input string
 	 * @param   string  $mask   mask for search
-	 * @param   integer $offset start position of the string to examine
-	 * @param   integer $length length of the string to examine
-	 * @return  integer length of the initial segment that contains characters not in the mask
+	 * @param   int|null $offset start position of the string to examine
+	 * @param   int|null $length length of the string to examine
+	 * @return  int length of the initial segment that contains characters not in the mask
 	 */
-	public static function strcspn($str, $mask, $offset = NULL, $length = NULL)
+	public static function strcspn($str, $mask, ?int $offset = NULL, ?int $length = NULL)
 	{
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -530,7 +529,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _strcspn($str, $mask, $offset, $length);
+		return _strcspn((string) $str, (string) $mask, $offset, $length);
 	}
 
 	/**
@@ -541,12 +540,12 @@ class KO7_UTF8 {
 	 *
 	 * @author  Harry Fuecks <hfuecks@gmail.com>
 	 * @param   string  $str                input string
-	 * @param   integer $final_str_length   desired string length after padding
+	 * @param   int $final_str_length   desired string length after padding
 	 * @param   string  $pad_str            string to use as padding
-	 * @param   string  $pad_type           padding type: STR_PAD_RIGHT, STR_PAD_LEFT, or STR_PAD_BOTH
+	 * @param   int  $pad_type           padding type: STR_PAD_RIGHT, STR_PAD_LEFT, or STR_PAD_BOTH
 	 * @return  string
 	 */
-	public static function str_pad($str, $final_str_length, $pad_str = ' ', $pad_type = STR_PAD_RIGHT)
+	public static function str_pad($str, int $final_str_length, string $pad_str = ' ', int $pad_type = STR_PAD_RIGHT)
 	{
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -556,7 +555,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _str_pad($str, $final_str_length, $pad_str, $pad_type);
+		return _str_pad((string) $str, $final_str_length, $pad_str, $pad_type);
 	}
 
 	/**
@@ -567,10 +566,10 @@ class KO7_UTF8 {
 	 *
 	 * @author  Harry Fuecks <hfuecks@gmail.com>
 	 * @param   string  $str            input string
-	 * @param   integer $split_length   maximum length of each chunk
+	 * @param   int $split_length   maximum length of each chunk
 	 * @return  array
 	 */
-	public static function str_split($str, $split_length = 1)
+	public static function str_split($str, int $split_length = 1)
 	{
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -580,7 +579,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _str_split($str, $split_length);
+		return _str_split((string) $str, $split_length);
 	}
 
 	/**
@@ -602,7 +601,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _strrev($str);
+		return _strrev((string) $str);
 	}
 
 	/**
@@ -616,7 +615,7 @@ class KO7_UTF8 {
 	 * @param   string  $charlist   string of characters to remove
 	 * @return  string
 	 */
-	public static function trim($str, $charlist = NULL)
+	public static function trim($str, ?string $charlist = NULL)
 	{
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -626,7 +625,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _trim($str, $charlist);
+		return _trim((string) $str, $charlist);
 	}
 
 	/**
@@ -640,7 +639,7 @@ class KO7_UTF8 {
 	 * @param   string  $charlist   string of characters to remove
 	 * @return  string
 	 */
-	public static function ltrim($str, $charlist = NULL)
+	public static function ltrim($str, ?string $charlist = NULL)
 	{
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -650,7 +649,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _ltrim($str, $charlist);
+		return _ltrim((string) $str, $charlist);
 	}
 
 	/**
@@ -664,7 +663,7 @@ class KO7_UTF8 {
 	 * @param   string  $charlist   string of characters to remove
 	 * @return  string
 	 */
-	public static function rtrim($str, $charlist = NULL)
+	public static function rtrim($str, ?string $charlist = NULL)
 	{
 		if ( ! isset(UTF8::$called[__FUNCTION__]))
 		{
@@ -674,7 +673,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _rtrim($str, $charlist);
+		return _rtrim((string) $str, $charlist);
 	}
 
 	/**
@@ -697,7 +696,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _ord($chr);
+		return _ord((string) $chr);
 	}
 
 	/**
@@ -727,7 +726,7 @@ class KO7_UTF8 {
 			UTF8::$called[__FUNCTION__] = TRUE;
 		}
 
-		return _to_unicode($str);
+		return _to_unicode((string) $str);
 	}
 
 	/**
@@ -743,9 +742,9 @@ class KO7_UTF8 {
 	 * Ported to PHP by Henri Sivonen <hsivonen@iki.fi>, see http://hsivonen.iki.fi/php-utf8/
 	 * Slight modifications to fit with phputf8 library by Harry Fuecks <hfuecks@gmail.com>.
 	 *
-	 * @param   array   $str    unicode code points representing a string
-	 * @return  string  utf8 string of characters
-	 * @return  boolean FALSE if a code point cannot be found
+	 * @param   array   $arr    unicode code points representing a string
+	 * @return  string  UTF-8 string of characters
+	 * @return  bool FALSE if a code point cannot be found
 	 */
 	public static function from_unicode($arr)
 	{

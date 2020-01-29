@@ -1,6 +1,7 @@
 # Validation
 
-Validation can be performed on any array using the [Validation] class. Labels and rules can be attached to a Validation object by the array key, called a "field name".
+Validation can be performed on any array using the [Validation](../api/Validation) class. Labels and rules can be 
+attached to a Validation object by the array key, called a "field name".
 
 labels
 :  A label is a human-readable version of the field name.
@@ -12,7 +13,7 @@ rules
 
 Using `TRUE` as the field name when adding a rule will be applied to all named fields.
 
-Creating a validation object is done using the [Validation::factory] method:
+Creating a validation object is done using the [Validation::factory](../api/Validation#factory) method:
 
     $object = Validation::factory($array);
 
@@ -24,51 +25,54 @@ Koseven provides a set of useful rules in the [Valid] class:
 
 Rule name                 | Function
 ------------------------- |-------------------------------------------------
-[Valid::not_empty]     | Value must be a non-empty value
-[Valid::regex]         | Match the value against a regular expression
-[Valid::min_length]    | Minimum number of characters for value
-[Valid::max_length]    | Maximum number of characters for value
-[Valid::exact_length]  | Value must be an exact number of characters
-[Valid::email]         | An email address is required
-[Valid::email_domain]  | Check that the domain of the email exists
-[Valid::url]           | Value must be a URL
-[Valid::ip]            | Value must be an IP address
-[Valid::phone]         | Value must be a phone number
-[Valid::credit_card]   | Require a credit card number
-[Valid::date]          | Value must be a date (and time)
-[Valid::alpha]         | Only alpha characters allowed
-[Valid::alpha_dash]    | Only alpha and hyphens allowed
-[Valid::alpha_numeric] | Only alpha and numbers allowed
-[Valid::digit]         | Value must be an integer digit
-[Valid::decimal]       | Value must be a decimal or float value
-[Valid::numeric]       | Only numeric characters allowed
-[Valid::range]         | Value must be within a range
-[Valid::color]         | Value must be a valid HEX color
-[Valid::matches]       | Value matches another field value
+[Valid::not_empty]        | Value must be a non-empty value
+[Valid::regex]            | Match the value against a regular expression
+[Valid::min_length]       | Minimum number of characters for value
+[Valid::max_length]       | Maximum number of characters for value
+[Valid::exact_length]     | Value must be an exact number of characters
+[Valid::email]            | An email address is required
+[Valid::email_domain]     | Check that the domain of the email exists
+[Valid::url]              | Value must be a URL
+[Valid::ip]               | Value must be an IP address
+[Valid::phone]            | Value must be a phone number
+[Valid::credit_card]      | Require a credit card number
+[Valid::date]             | Value must be a date (and time)
+[Valid::alpha]            | Only alpha characters allowed
+[Valid::alpha_dash]       | Only alpha and hyphens allowed
+[Valid::alpha_numeric]    | Only alpha and numbers allowed
+[Valid::digit]            | Value must be an integer digit
+[Valid::decimal]          | Value must be a decimal or float value
+[Valid::numeric]          | Only numeric characters allowed
+[Valid::range]            | Value must be within a range
+[Valid::color]            | Value must be a valid HEX color
+[Valid::matches]          | Value matches another field value
 
 ## Adding Rules
 
-All validation rules are defined as a field name, a method, a function (using the [PHP callback](http://php.net/callback) syntax) or [closure](http://php.net/manual/functions.anonymous.php), and an array of parameters:
+All validation rules are defined as a field name, a method, a function 
+(using the [PHP callback](http://php.net/callback) syntax) or [closure](http://php.net/manual/functions.anonymous.php),
+and an array of parameters:
 
-    $object->rule($field, $callback, array($parameter1, $parameter2));
+    $object->rule($field, $callback, [$parameter1, $parameter2]);
 
 If no parameters are specified, the field value will be passed to the callback. The following two rules are equivalent:
 
     $object->rule($field, 'not_empty');
-    $object->rule($field, 'not_empty', array(':value'));
+    $object->rule($field, 'not_empty', [':value']);
 
-Rules defined in the [Valid] class can be added by using the method name alone. The following three rules are equivalent:
+Rules defined in the [Valid](../api/Valid) class can be added by using the method name alone. The following three rules 
+are equivalent:
 
     $object->rule('number', 'phone');
-    $object->rule('number', array('Valid', 'phone'));
+    $object->rule('number', ['Valid', 'phone']);
     $object->rule('number', 'Valid::phone');
 
 ### Adding Rules for multiple fields together
 
 To validate multiple fields together, you can do something like this:
 
-    $object->rule('one', 'only_one', array(':validation', array('one', 'two')));
-    $object->rule('two', 'only_one', array(':validation', array('one', 'two')));
+    $object->rule('one', 'only_one', [':validation', ['one', 'two']]);
+    $object->rule('two', 'only_one', [':validation', ['one', 'two']]);
 
     public function only_one($validation, $fields)
     {
@@ -95,11 +99,12 @@ To validate multiple fields together, you can do something like this:
 
 ## Binding Variables
 
-The [Validation] class allows you to bind variables to certain strings so that they can be used when defining rules. Variables are bound by calling the [Validation::bind] method.
+The [Validation](../api/Validation) class allows you to bind variables to certain strings so that they can be used when
+defining rules. Variables are bound by calling the [Validation::bind](../api/Validation#bind) method.
 
     $object->bind(':model', $user_model);
     // Future code will be able to use :model to reference the object
-    $object->rule('username', 'some_rule', array(':model'));
+    $object->rule('username', 'some_rule', [':model']);
 
 By default, the validation object will automatically bind the following values for you to use as rule parameters:
 
@@ -109,13 +114,17 @@ By default, the validation object will automatically bind the following values f
 
 ## Adding Errors
 
-The [Validation] class will add an error for a field if any of the rules associated to it return `FALSE`. This allows many built in PHP functions to be used as rules, like `in_array`.
+The [Validation](../api/Validation) class will add an error for a field if any of the rules associated to it return `FALSE`. 
+This allows many built in PHP functions to be used as rules, like `in_array`.
 
-    $object->rule('color', 'in_array', array(':value', array('red', 'green', 'blue')));
+    $object->rule('color', 'in_array', [':value', ['red', 'green', 'blue']]);
 
-Rules added to empty fields will run, but returning `FALSE` will not automatically add an error for the field. In order for a rule to affect empty fields, you must add the error manually by calling the [Validation::error] method. In order to do this, you must pass the validation object to the rule.
+Rules added to empty fields will run, but returning `FALSE` will not automatically add an error for the field. 
+In order for a rule to affect empty fields, you must add the error manually by calling the 
+[Validation::error](../api/Validation#error) method. 
+In order to do this, you must pass the validation object to the rule.
 
-    $object->rule($field, 'the_rule', array(':validation', ':field'));
+    $object->rule($field, 'the_rule', [':validation', ':field']);
 
     public function the_rule($validation, $field)
     {
@@ -129,29 +138,31 @@ Rules added to empty fields will run, but returning `FALSE` will not automatical
 
 ## Example
 
-To start our example, we will perform validation on the HTTP POST data of the current request that contains user registration information:
+To start our example, we will perform validation on the HTTP POST data of the current request that contains user 
+registration information:
 
 [!!] In Koseven controllers, we access `$this->request->post()` instead of `$_POST` for better request isolation.
 
     $object = Validation::factory($this->request->post());
 
-Next we need to process the POST'ed information using [Validation]. To start, we need to add some rules:
+Next we need to process the POST'ed information using [Validation](../api/Validation). To start, we need to add some rules:
 
     $object
         ->rule('username', 'not_empty')
-        ->rule('username', 'regex', array(':value', '/^[a-z_.]++$/iD'))
+        ->rule('username', 'regex', [':value', '/^[a-z_.]++$/iD'])
         ->rule('password', 'not_empty')
-        ->rule('password', 'min_length', array(':value', '6'))
-        ->rule('confirm',  'matches', array(':validation', 'confirm', 'password'))
+        ->rule('password', 'min_length', [':value', '6'])
+        ->rule('confirm',  'matches', [':validation', 'confirm', 'password'])
         ->rule('use_ssl', 'not_empty');
 
 Any existing PHP function can also be used a rule. For instance, if we want to check if the user entered a proper value for the SSL question:
 
-    $object->rule('use_ssl', 'in_array', array(':value', array('yes', 'no')));
+    $object->rule('use_ssl', 'in_array', [':value', ['yes', 'no']]);
 
-Note that all array parameters must still be wrapped in an array! Without the wrapping array, `in_array` would be called as `in_array($value, 'yes', 'no')`, which would result in a PHP error.
+Note that all array parameters must still be wrapped in an array! Without the wrapping array, `in_array` would be called#
+as `in_array($value, 'yes', 'no')`, which would result in a PHP error.
 
-Any custom rules can be added using a [PHP callback](http://php.net/manual/language.pseudo-types.php#language.types.callback]:
+Any custom rules can be added using a [PHP callback](http://php.net/manual/language.pseudo-types.php#language.types.callback):
 
     $object->rule('username', 'User_Model::unique_username');
 
@@ -171,7 +182,7 @@ The method `User_Model::unique_username()` would be defined similar to:
 
 # A Complete Example
 
-First, we need a [View] that contains the HTML form, which will be placed in `application/views/user/register.php`:
+First, we need a [View](../api/View) that contains the HTML form, which will be placed in `application/views/user/register.php`:
 
     <?php echo Form::open() ?>
     <?php if ($errors): ?>
@@ -194,14 +205,14 @@ First, we need a [View] that contains the HTML form, which will be placed in `ap
         <dd><?php echo Form::password('confirm') ?></dd>
 
         <dt><?php echo Form::label('use_ssl', 'Use extra security?') ?></dt>
-        <dd><?php echo Form::select('use_ssl', array('yes' => 'Always', 'no' => 'Only when necessary'), $post['use_ssl']) ?></dd>
+        <dd><?php echo Form::select('use_ssl', ['yes' => 'Always', 'no' => 'Only when necessary'], $post['use_ssl']) ?></dd>
         <dd class="help">For security, SSL is always used when making payments.</dd>
     </dl>
 
     <?php echo Form::submit(NULL, 'Sign Up') ?>
     <?php echo Form::close() ?>
 
-[!!] This example uses the [Form] helper extensively. Using [Form] instead of writing HTML ensures that all of the form inputs will properly handle input that includes HTML characters. If you prefer to write the HTML yourself, be sure to use [HTML::chars] to escape user input.
+[!!] This example uses the [Form](../api/Form) helper extensively. Using Form instead of writing HTML ensures that all of the form inputs will properly handle input that includes HTML characters. If you prefer to write the HTML yourself, be sure to use [HTML::chars](../api/HTML#chars) to escape user input.
 
 Next, we need a controller and action to process the registration, which will be placed in `application/classes/Controller/User.php`:
 
@@ -213,15 +224,15 @@ Next, we need a controller and action to process the registration, which will be
 
             $validation = Validation::factory($this->request->post())
                 ->rule('username', 'not_empty')
-                ->rule('username', 'regex', array(':value', '/^[a-z_.]++$/iD'))
-                ->rule('username', array($user, 'unique_username'))
+                ->rule('username', 'regex', [':value', '/^[a-z_.]++$/iD'])
+                ->rule('username', [$user, 'unique_username'])
 
                 ->rule('password', 'not_empty')
-                ->rule('password', 'min_length', array(':value', 6))
-                ->rule('confirm',  'matches', array(':validation', ':field', 'password'))
+                ->rule('password', 'min_length', [':value', 6])
+                ->rule('confirm',  'matches', [':validation', ':field', 'password'])
 
                 ->rule('use_ssl', 'not_empty')
-                ->rule('use_ssl', 'in_array', array(':value', array('yes', 'no')));
+                ->rule('use_ssl', 'in_array', [':value', ['yes', 'no']]);
 
             if ($validation->check())
             {

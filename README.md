@@ -1,11 +1,9 @@
-[![Koseven Logo](https://i.imgur.com/2CeT8JL.png)](https://koseven.ga/)
+[![Koseven Logo](https://i.imgur.com/2CeT8JL.png)](https://koseven.dev/)
 
 [![Latest Stable Version](https://poser.pugx.org/koseven/koseven/v/stable)](https://packagist.org/packages/koseven/koseven)
-[![Build Status](https://travis-ci.org/koseven/koseven.svg?branch=devel)](https://travis-ci.org/koseven/koseven)
-[![Coverage Status](https://coveralls.io/repos/github/koseven/koseven/badge.svg?branch=devel)](https://coveralls.io/github/koseven/koseven?branch=devel)
+[![Build Status](https://action-badges.now.sh/koseven/koseven?workflow=test)](https://github.com/koseven/koseven/actions)
 [![License](https://poser.pugx.org/koseven/koseven/license.svg)](https://packagist.org/packages/koseven/koseven)
 [![Github Issues](https://img.shields.io/github/issues/koseven/koseven.svg)](https://github.com/koseven/koseven/issues)
-[![Pending Pull-Requests](http://githubbadges.herokuapp.com/koseven/koseven/pulls.svg)](https://github.com/koseven/koseven/pulls)
 [![Forum](https://img.shields.io/badge/Discourse-Join%20Forum-ff9c08.svg?logo=discourse)](https://koseven.discourse.group)
 
 ## [Download 3.3.9](https://github.com/koseven/koseven/releases/tag/3.3.9)
@@ -18,7 +16,7 @@ Released under a [BSD license](LICENSE.md), Koseven can be used legally for any 
 
 ## Will work as dropin of Kohana?
 
-If you were using 3.3.x version you may need to make some small changes. Please refer to [upgrading from kohana](https://docs.koseven.ga/guide/kohana/upgrading-from-kohana) section of the documentation.
+If you were using 3.3.x version you may need to make some small changes. Please refer to [upgrading from kohana](https://koseven.dev/guide/kohana/upgrading-from-kohana) section of the documentation.
 
 ## I Need help!
 
@@ -36,7 +34,7 @@ And so the Koseven repository was born and will keep this repository updated for
 
 ## Are modules of the original Kohana compatible?
 
-Yes they are, just be sure that they are compatible with Kohana 3.3.X. An overview of Koseven's team own modules can be found on [modules](https://koseven.ga/modules.html) page. There's also a list online with a nice overview of existing kohana modules maintained (or abandoned) by others. You can consult this list at [kohana-modules.com](https://kohana-modules.com)
+Yes they are, just be sure that they are compatible with Kohana 3.3.X. An overview of Koseven's team own modules can be found on [modules](https://koseven.dev/modules.html) page. There's also a list online with a nice overview of existing kohana modules maintained (or abandoned) by others. You can consult this list at [kohana-modules.com](https://kohana-modules.com)
 
 ### Why all modules in 1 repo?
 
@@ -50,7 +48,7 @@ There is a dedicated [versions and roadmap](https://koseven.discourse.group/t/ro
 
 ## Documentation
 
-Koseven documentation can be found at [docs.koseven.ga](https://docs.koseven.ga) which also contains an API browser.
+Koseven documentation can be found at [koseven.dev](https://koseven.dev) which also contains an API browser.
 
 The `userguide` module included in all Kohana/Koseven releases allows you to view the documentation locally. To use it you need to enable the`userguide` module in the bootstrap.php file (found in the `application` directory). Next you should be able to read the documentation from your own site via `/index.php/guide` (or just `/guide` if you are rewriting your URLs).
 

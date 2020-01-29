@@ -7,12 +7,12 @@
  * @group ko7.core
  * @group ko7.core.valid
  *
- * @package    KO7
+ * @package	KO7
  * @category   Tests
- * @author     Kohana Team
+ *
  * @author     BRMatt <matthew@sigswitch.com>
- * @copyright  (c) KO7 Team
- * @license    https://koseven.ga/LICENSE.md
+ * @copyright  (c) Koseven Team
+ * @license	https://koseven.dev/LICENSE
  */
 class KO7_ValidTest extends Unittest_TestCase
 {
@@ -120,7 +120,7 @@ class KO7_ValidTest extends Unittest_TestCase
 	 *
 	 * @test
 	 * @dataProvider provider_alpha_dash
-	 * @param string  $input          The string to test
+	 * @param string  $input	      The string to test
 	 * @param boolean $contains_utf8  Does the string contain utf8 specific characters
 	 * @param boolean $expected       Is $input valid?
 	 */
@@ -225,14 +225,14 @@ class KO7_ValidTest extends Unittest_TestCase
 	public function provider_digit()
 	{
 		return [
-			['12345',    TRUE],
+			['12345',	TRUE],
 			['10.5',     FALSE],
-			['abcde',    FALSE],
+			['abcde',	FALSE],
 			['abcd1234', FALSE],
 			['-5',       FALSE],
-			[-5,         FALSE],
+			[-5,	     FALSE],
 			// Empty test
-			['',         FALSE],
+			['',	     FALSE],
 			[NULL,       FALSE],
 			[FALSE,      FALSE],
 		];
@@ -309,9 +309,9 @@ class KO7_ValidTest extends Unittest_TestCase
 	public function provider_credit_card()
 	{
 		return [
-			['4222222222222',    'visa',       TRUE],
+			['4222222222222',	'visa',       TRUE],
 			['4012888888881881', 'visa',       TRUE],
-			['4012888888881881', NULL,         TRUE],
+			['4012888888881881', NULL,	     TRUE],
 			['4012888888881881', ['mastercard', 'visa'], TRUE],
 			['4012888888881881', ['discover', 'mastercard'], FALSE],
 			['4012888888881881', 'mastercard', FALSE],
@@ -332,7 +332,7 @@ class KO7_ValidTest extends Unittest_TestCase
 	 * @covers Valid::credit_card
 	 * @dataProvider  provider_credit_card()
 	 * @param string  $number   Credit card number
-	 * @param string  $type	    Credit card type
+	 * @param string  $type		Credit card type
 	 * @param boolean $expected
 	 */
 	public function test_credit_card($number, $type, $expected)
@@ -536,7 +536,7 @@ class KO7_ValidTest extends Unittest_TestCase
 	 *
 	 * @test
 	 * @dataProvider provider_equals
-	 * @param   string   $string    value to check
+	 * @param   string   $string	value to check
 	 * @param   integer  $required  required value
 	 * @param   boolean  $correct   is $string the same as $required?
 	 * @return  boolean
@@ -615,13 +615,13 @@ class KO7_ValidTest extends Unittest_TestCase
 	 *
 	 * @test
 	 * @dataProvider provider_max_length
-	 * @param string  $string    String to test
+	 * @param string  $string	String to test
 	 * @param integer $maxlength Max length for this string
 	 * @param boolean $correct   Is $string <= $maxlength
 	 */
 	public function test_max_length($string, $maxlength, $correct)
 	{
-		 $this->assertSame(
+	     $this->assertSame(
 			$correct,
 			Valid::max_length($string, $maxlength)
 		);
@@ -654,7 +654,7 @@ class KO7_ValidTest extends Unittest_TestCase
 	 * @dataProvider provider_min_length
 	 * @param string  $string     String to compare
 	 * @param integer $minlength  The minimum allowed length
-	 * @param boolean $correct    Is $string 's length >= $minlength
+	 * @param boolean $correct	Is $string 's length >= $minlength
 	 */
 	public function test_min_length($string, $minlength, $correct)
 	{
@@ -680,13 +680,13 @@ class KO7_ValidTest extends Unittest_TestCase
 
 		return [
 			[[],      FALSE],
-			[NULL,         FALSE],
-			['',           FALSE],
-			[$ao,          FALSE],
-			[$ao1,         TRUE],
+			[NULL,	     FALSE],
+			['',	       FALSE],
+			[$ao,	      FALSE],
+			[$ao1,	     TRUE],
 			[[NULL],  TRUE],
-			[0,            TRUE],
-			['0',          TRUE],
+			[0,			TRUE],
+			['0',	      TRUE],
 			['Something',  TRUE],
 		];
 	}
@@ -726,9 +726,9 @@ class KO7_ValidTest extends Unittest_TestCase
 			[-.4,     TRUE],
 			[4.,      TRUE],
 			[-4.,     TRUE],
-			['.5',    TRUE],
+			['.5',	TRUE],
 			['-.5',   TRUE],
-			['5.',    TRUE],
+			['5.',	TRUE],
 			['-5.',   TRUE],
 			['.',     FALSE],
 			['1.2.3', FALSE],
@@ -764,14 +764,14 @@ class KO7_ValidTest extends Unittest_TestCase
 		return [
 			['0163634840',       NULL, TRUE],
 			['+27173634840',     NULL, TRUE],
-			['123578',           NULL, FALSE],
+			['123578',	       NULL, FALSE],
 			// Some uk numbers
 			['01234456778',      NULL, TRUE],
 			['+0441234456778',   NULL, FALSE],
 			// Google UK case you're interested
 			['+44 20-7031-2017', [12], TRUE],
 			// BT Corporate
-			['020 7356 5000',	  NULL, TRUE],
+			['020 7356 5000',      NULL, TRUE],
 			// Empty test
 			['', NULL, FALSE],
 			[NULL, NULL, FALSE],
@@ -869,7 +869,7 @@ class KO7_ValidTest extends Unittest_TestCase
 	 *
 	 * @test
 	 * @dataProvider provider_range
-	 * @param integer $number    Number to test
+	 * @param integer $number	Number to test
 	 * @param integer $min       Lower bound
 	 * @param integer $max       Upper bound
 	 * @param boolean $expected  Is Number within the bounds of $min && $max
@@ -977,6 +977,116 @@ class KO7_ValidTest extends Unittest_TestCase
 		$this->AssertSame(
 			$expected,
 			Valid::matches($data, $field, $match)
+		);
+	}
+
+	/**
+	 * Returns test data for test_type()
+	 *
+	 * @return array
+	 */
+	public function provider_type()
+	{
+		return [
+			['check me', ['string'], TRUE],
+			[1, ['string'], FALSE],
+			[NULL, ['string', 'null'], TRUE],
+			[FALSE, ['bool'], TRUE],
+			['FALSE', ['bool'], FALSE],
+			['2', ['int', 'numeric'], TRUE],
+			[new ArrayObject(), ['countable'], TRUE],
+		];
+	}
+
+	/**
+	 * Tests Valid::type()
+	 *
+	 * Checks type of field value.
+	 *
+	 * @test
+	 * @dataProvider provider_type
+	 * @param mixed $value Field value.
+	 * @param string[] $types Valid value types.
+	 * @param bool $correct	Is $value in $types.
+	 */
+	public function test_type($value, $types, $correct)
+	{
+		$this->assertSame(
+			$correct,
+			Valid::type($string, ...$types)
+		);
+	}
+
+	/**
+	 * Returns test data for test_more()
+	 *
+	 * @return array
+	 */
+	public function provider_more()
+	{
+		return [
+			[1, 2, FALSE],
+			[2, 1, TRUE],
+			[2, 1.9, TRUE],
+			[2.1, 3, FALSE],
+			[3.2, 3.3, FALSE],
+			[3, 3, FALSE],
+			[3.1, 3.1, FALSE],
+		];
+	}
+
+	/**
+	 * Tests Valid::more()
+	 *
+	 * Tests if a field value more than minimum.
+	 *
+	 * @test
+	 * @dataProvider provider_more
+	 * @param float|int $value Field value.
+	 * @param float|int $min Minimum value.
+	 * @param bool $correct	Is $value more than $min.
+	 */
+	public function test_more($value, $min, $correct)
+	{
+		$this->assertSame(
+			$correct,
+			Valid::more($value, $min)
+		);
+	}
+	/**
+	 * Returns test data for test_more_or_equal()
+	 *
+	 * @return array
+	 */
+	public function provider_more_or_equal()
+	{
+		return [
+			[1, 2, FALSE],
+			[2, 1, TRUE],
+			[2, 1.9, TRUE],
+			[2.1, 3, FALSE],
+			[3.2, 3.3, FALSE],
+			[3, 3, TRUE],
+			[3.1, 3.1, TRUE],
+		];
+	}
+
+	/**
+	 * Tests Valid::more_or_equal()
+	 *
+	 * Tests if a field value more or equal than minimum.
+	 *
+	 * @test
+	 * @dataProvider provider_more_or_equal
+	 * @param float|int $value Field value.
+	 * @param float|int $min Minimum value.
+	 * @param bool $correct	Is $value more than $min.
+	 */
+	public function test_more_or_equal($value, $min, $correct)
+	{
+		$this->assertSame(
+			$correct,
+			Valid::more_or_equal($value, $min)
 		);
 	}
 }

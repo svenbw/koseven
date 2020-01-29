@@ -4,9 +4,10 @@
  *
  * @package    KO7
  * @category   Security
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 class KO7_Security {
 
@@ -123,23 +124,6 @@ class KO7_Security {
 			$diff |= ord($a[$i]) ^ ord($b[$i]);
 		}
 		return $diff === 0;
-	}
-
-	/**
-	 * Deprecated for security reasons.
-	 * See https://github.com/koseven/koseven/issues/107
-	 *
-	 * Remove image tags from a string.
-	 *
-	 *     $str = Security::strip_image_tags($str);
-	 *
-	 * @deprecated since version 3.3.6
-	 * @param   string  $str    string to sanitize
-	 * @return  string
-	 */
-	public static function strip_image_tags($str)
-	{
-		return preg_replace('#<img\s.*?(?:src\s*=\s*["\']?([^"\'<>\s]*)["\']?[^>]*)?>#is', '$1', $str);
 	}
 
 	/**

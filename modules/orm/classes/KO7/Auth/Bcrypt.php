@@ -3,9 +3,10 @@
 /**
  * Bcrypt Auth driver.
  * @package    KO7/Auth
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    http:/koseven.ga/license
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    http:/koseven.dev/license
  */
 class KO7_Auth_Bcrypt extends Auth {
 

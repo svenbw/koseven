@@ -4,18 +4,21 @@ Custom error pages allow you to display a friendly error message to users, rathe
 
 ## Prerequisites
 
-1. You will need `'errors' => TRUE` passed to [KO7::init]. This will convert PHP-errors into exceptions which are easier to handle (The default value is `TRUE`).
-2. Custom error pages will only be used to handle throw [HTTP_Exception]'s. If you simply set a status of, for example, 404 via [Respose::status] the custom page will not be used.
+1. You will need `'errors' => TRUE` passed to [KO7::init](../api/KO7#init). This will convert PHP-errors into exceptions
+   which are easier to handle (The default value is `TRUE`).
+2. Custom error pages will only be used to handle throw [HTTP_Exception](../api/HTTP_Exception)'s. If you simply set a 
+   status of, for example, 404 via [Respose::status](../api/Respone#status) the custom page will not be used.
 
 ## Extending the HTTP_Exception classes
 
-Handling [HTTP_Exception]'s in KO7 has become easier with the changes introduced in Kohana 3.3.
+Handling [HTTP_Exception](../api/HTTP_Exception)'s in Koseven has become easier with the changes introduced in version 3.3
 
-For each [HTTP_Exception] class we can individually override the generation of the [Response] instance.
+For each [HTTP_Exception](../api/HTTP_Exception) class we can individually override the generation of the 
+[Response](../api/Response) instance.
 
-[!!] Note: We can also use HMVC to issue a sub-request to another page rather than generating the [Response] in the [HTTP_Exception] itself.
+[!!] Note: We can also use HMVC to issue a sub-request to another page rather than generating the [Response](../api/Response) in the [HTTP_Exception](../api/HTTP_Exception) itself.
 
-For example, to handle 404 pages we can do this in APPPATH/classes/HTTP/Exception/404.php:
+For example, to handle 404 pages we can do this in `APPPATH/classes/HTTP/Exception/404.php`:
 
 	class HTTP_Exception_404 extends KO7_HTTP_Exception_404 {
 		
@@ -41,7 +44,8 @@ For example, to handle 404 pages we can do this in APPPATH/classes/HTTP/Exceptio
 		}
 	}
 
-Another example, this time to handle 401 Unauthorized errors (aka "Not Logged In") we can do this in APPPATH/classes/HTTP/Exception/401.php:
+Another example, this time to handle 401 Unauthorized errors (aka "Not Logged In") we can do this in 
+`APPPATH/classes/HTTP/Exception/401.php`:
 
 	class HTTP_Exception_401 extends KO7_HTTP_Exception_401 {
 		
@@ -62,7 +66,8 @@ Another example, this time to handle 401 Unauthorized errors (aka "Not Logged In
 		}
 	}
 
-Finally, to override the default [Response] for all [HTTP_Exception]'s without a more specific override we can do this in APPPATH/classes/HTTP/Exception.php:
+Finally, to override the default [Response](../api/Response) for all [HTTP_Exception](../api/HTTP_Exception)'s without 
+a more specific override we can do this in `APPPATH/classes/HTTP/Exception.php`:
 
 	class HTTP_Exception extends KO7_HTTP_Exception {
 		

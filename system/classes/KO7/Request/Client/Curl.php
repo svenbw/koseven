@@ -1,14 +1,16 @@
 <?php
 /**
- * [Request_Client_External] Curl driver performs external requests using the
- * php-curl extention. This is the default driver for all external requests.
+ * Curl driver performs external requests using the
+ * php-curl extension.
  *
- * @package    KO7
- * @category   Base
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
- * @uses       [PHP cURL](http://php.net/manual/en/book.curl.php)
+ * NOTE: This driver is not used by default. To use it as default call:
+ *
+ * @package        KO7\Request
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license        https://koseven.dev/LICENSE
+ *
  */
 class KO7_Request_Client_Curl extends Request_Client_External {
 
@@ -16,11 +18,14 @@ class KO7_Request_Client_Curl extends Request_Client_External {
 	 * Sends the HTTP message [Request] to a remote server and processes
 	 * the response.
 	 *
-	 * @param   Request   $request  request to send
-	 * @param   Response  $request  response to send
+	 * @param Request  $request  request to send
+	 * @param Response $response response to send
+	 *
+	 * @throws Request_Exception
+	 *
 	 * @return  Response
 	 */
-	public function _send_message(Request $request, Response $response)
+	public function _send_message(Request $request, Response $response): Response
 	{
 		$options = [];
 
@@ -32,7 +37,8 @@ class KO7_Request_Client_Curl extends Request_Client_External {
 		// and DOES NOT require writing data to disk before putting it, if
 		// reading the PHP docs you may have got that impression. SdF
 		// This will also add a Content-Type: application/x-www-form-urlencoded header unless you override it
-		if ($body = $request->body()) {
+		if ($body = $request->body())
+		{
 			$options[CURLOPT_POSTFIELDS] = $body;
 		}
 
@@ -43,7 +49,7 @@ class KO7_Request_Client_Curl extends Request_Client_External {
 
 			foreach ($headers as $key => $value)
 			{
-				$http_headers[] = $key.': '.$value;
+				$http_headers[] = $key . ': ' . $value;
 			}
 
 			$options[CURLOPT_HTTPHEADER] = $http_headers;
@@ -55,13 +61,13 @@ class KO7_Request_Client_Curl extends Request_Client_External {
 			$options[CURLOPT_COOKIE] = http_build_query($cookies, NULL, '; ');
 		}
 
-		// Get any exisiting response headers
+		// Get any existing response headers
 		$response_header = $response->headers();
 
 		// Implement the standard parsing parameters
-		$options[CURLOPT_HEADERFUNCTION]        = [$response_header, 'parse_header_string'];
+		$options[CURLOPT_HEADERFUNCTION] = [$response_header, 'parse_header_string'];
 		$this->_options[CURLOPT_RETURNTRANSFER] = TRUE;
-		$this->_options[CURLOPT_HEADER]         = FALSE;
+		$this->_options[CURLOPT_HEADER] = FALSE;
 
 		// Apply any additional options set to
 		$options += $this->_options;
@@ -70,17 +76,20 @@ class KO7_Request_Client_Curl extends Request_Client_External {
 
 		if ($query = $request->query())
 		{
-			$uri .= '?'.http_build_query($query, NULL, '&');
+			$uri .= '?' . http_build_query($query, NULL, '&');
 		}
 
 		// Open a new remote connection
 		$curl = curl_init($uri);
 
-		// Set connection options
-		if ( ! curl_setopt_array($curl, $options))
+		// Set connection options - Throws an Exception if options are invalid
+		try
 		{
-			throw new Request_Exception('Failed to set CURL options, check CURL documentation: :url',
-				[':url' => 'http://php.net/curl_setopt_array']);
+			curl_setopt_array($curl, $options);
+		}
+		catch (Exception $e)
+		{
+			throw new Request_Exception($e->getMessage());
 		}
 
 		// Get the response body
@@ -99,12 +108,14 @@ class KO7_Request_Client_Curl extends Request_Client_External {
 
 		if (isset($error))
 		{
-			throw new Request_Exception('Error fetching remote :url [ status :code ] :error',
-				[':url' => $request->url(), ':code' => $code, ':error' => $error]);
+			throw new Request_Exception(
+				'Error fetching remote :url [ status :code ] :error',
+				[':url' => $request->url(), ':code' => $code, ':error' => $error]
+			);
 		}
 
-		$response->status($code)
-			->body($body);
+		// Build the response
+		$response->status($code)->body($body);
 
 		return $response;
 	}
@@ -114,18 +125,19 @@ class KO7_Request_Client_Curl extends Request_Client_External {
 	 * for POST or CURLOPT_CUSTOMREQUEST otherwise
 	 *
 	 * @param Request $request
-	 * @param array $options
+	 * @param array   $options
+	 *
 	 * @return array
 	 */
 	public function _set_curl_request_method(Request $request, array $options)
 	{
-		switch ($request->method()) {
-			case Request::POST:
-				$options[CURLOPT_POST] = TRUE;
-				break;
-			default:
-				$options[CURLOPT_CUSTOMREQUEST] = $request->method();
-				break;
+		if ($request->method() === Request::POST)
+		{
+			$options[CURLOPT_POST] = TRUE;
+		}
+		else
+		{
+			$options[CURLOPT_CUSTOMREQUEST] = $request->method();
 		}
 		return $options;
 	}

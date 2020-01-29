@@ -8,8 +8,9 @@ Koseven provides a simple yet powerful image manipulation module. The [Image] mo
 [Image_Imagick] driver which requires the `imagick` PHP extension. Additional drivers can be created by extending 
 the [Image] class.
 
-The [Image_GD] driver is the default. You can change this by providing an `image.default_driver` configuration option
-- for example:
+Since version 4.0 there is no default driver. You have to change your configuration by providing an `image.default_driver` option
+
+Example:
 
 ~~~
 // application/config/image.php
@@ -18,6 +19,10 @@ return array(
     'default_driver' => 'Imagick'
 );
 ~~~ 
+
+## Dependency
+
+Since Koseven Version 4.0 driver Imagick needs ImageMagick >= 7.0.0 with webp support installed.
 
 ## Getting Started
 

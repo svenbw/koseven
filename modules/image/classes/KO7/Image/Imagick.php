@@ -2,65 +2,81 @@
 /**
  * Support for image manipulation using [Imagick](http://php.net/Imagick).
  *
- * @package    KO7/Image
- * @category   Drivers
- * @author     Tamas Mihalik tamas.mihalik@gmail.com
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ * @copyright  (c) 2007-2016  Kohana Team - Tamas Mihalik tamas.mihalik@gmail.com
+ * @copyright  (c) since 2016 Koseven Team
+ * @license        https://koseven.dev/LICENSE
+ * @package        KO7/Image/Driver
+ *
  */
 class KO7_Image_Imagick extends Image {
 
 	/**
-	 * @var  Imagick  image magick object
+	 * Imagick object
+	 * @var Imagick
 	 */
 	protected $im;
 
 	/**
-	 * Checks if ImageMagick is enabled.
+	 * Holds current Imagick API Version
+	 * @var string
+	 */
+	protected static $_version;
+
+	/**
+	 * Checks if Imagick is enabled and supported Version.
 	 *
-	 * @throws  KO7_Exception
 	 * @return  boolean
 	 */
-	public static function check()
+	public static function check(): bool
 	{
+		// Check if extension is loaded
 		if ( ! extension_loaded('imagick'))
 		{
-			throw new KO7_Exception('Imagick is not installed, or the extension is not loaded');
+			return FALSE; //@codeCoverageIgnore
 		}
 
-		return Image_Imagick::$_checked = TRUE;
+		// Get Imagick API Version
+		$api_version = Imagick::getVersion();
+		preg_match('/ImageMagick ([0-9]+\.[0-9]+\.[0-9]+)/', $api_version['versionString'], $api_version);
+
+		// Set version for later access
+		static::$_version = $api_version[1];
+
+		// Check if Version is at least 6.9
+		return version_compare(static::$_version, '6.9', '>=');
 	}
 
 	/**
-	 * Runs [Image_Imagick::check] and loads the image.
+	 * KO7_Image_Imagick constructor.
+	 * Loads the image into an imagick object.
 	 *
-	 * @return  void
-	 * @throws  KO7_Exception
+	 * @param string $file  Path to image file
+	 *
+	 * @throws Image_Exception
+	 * @throws ImagickException
 	 */
 	public function __construct($file)
 	{
-		if ( ! Image_Imagick::$_checked)
-		{
-			// Run the install check
-			Image_Imagick::check();
-		}
+		// First we create an instance of Imagick object
+		$this->im = new Imagick;
 
+		// Now we call our parent constructor which will take care of some checks for us
 		parent::__construct($file);
 
-		$this->im = new Imagick;
-		$this->im->readImage($file);
-
-		if ( ! $this->im->getImageAlphaChannel())
-		{
-			// Force the image to have an alpha channel
-			$this->im->setImageAlphaChannel(Imagick::ALPHACHANNEL_SET);
+		// After successful checks we read the image
+		// @codeCoverageIgnoreStart
+		try {
+			$this->im->readImage($file);
 		}
+		catch (ImagickException $e)
+		{
+			throw new Image_Exception($e->getMessage(), NULL, $e->getCode(), $e);
+		}
+		// @codeCoverageIgnoreEnd
 	}
 
 	/**
 	 * Destroys the loaded image to free up resources.
-	 *
-	 * @return  void
 	 */
 	public function __destruct()
 	{
@@ -68,23 +84,51 @@ class KO7_Image_Imagick extends Image {
 		$this->im->destroy();
 	}
 
-	protected function _do_resize($width, $height)
+	/**
+	 * Resize function for Imagick
+	 *
+	 * @param int $width	Width to resize to
+	 * @param int $height	Height to resize to
+	 *
+	 * @throws Image_Exception
+	 *
+	 * @return bool
+	 */
+	protected function _do_resize($width, $height): bool
 	{
-		if ($this->im->scaleImage($width, $height))
+		// We actually scale the image and don't resize it
+		try
 		{
-			// Reset the width and height
-			$this->width = $this->im->getImageWidth();
-			$this->height = $this->im->getImageHeight();
-
-			return TRUE;
+			if ($success = $this->im->scaleImage($width, $height))
+			{
+				// Reset the width and height
+				$this->width = $this->im->getImageWidth();
+				$this->height = $this->im->getImageHeight();
+			}
 		}
+		// @codeCoverageIgnoreStart
+		catch (ImagickException $e)
+		{
+			throw new Image_Exception($e->getMessage(), NULL, $e->getCode(), $e);
+		}
+		// @codeCoverageIgnoreEnd
 
-		return FALSE;
+		return $success;
 	}
 
-	protected function _do_crop($width, $height, $offset_x, $offset_y)
+	/**
+	 * Crop function for Imagick
+	 *
+	 * @param int $width		Desired width
+	 * @param int $height		Desired height
+	 * @param int $offset_x		Offset from the left
+	 * @param int $offset_y		Offset from the top
+	 *
+	 * @return bool
+	 */
+	protected function _do_crop($width, $height, $offset_x, $offset_y): bool
 	{
-		if ($this->im->cropImage($width, $height, $offset_x, $offset_y))
+		if ($success = $this->im->cropImage($width, $height, $offset_x, $offset_y))
 		{
 			// Reset the width and height
 			$this->width = $this->im->getImageWidth();
@@ -92,16 +136,21 @@ class KO7_Image_Imagick extends Image {
 
 			// Trim off hidden areas
 			$this->im->setImagePage($this->width, $this->height, 0, 0);
-
-			return TRUE;
 		}
 
-		return FALSE;
+		return $success;
 	}
 
-	protected function _do_rotate($degrees)
+	/**
+	 * Rotate function for Imagick
+	 *
+	 * @param int $degrees	Degrees to rotate
+	 *
+	 * @return bool
+	 */
+	protected function _do_rotate($degrees): bool
 	{
-		if ($this->im->rotateImage(new ImagickPixel('transparent'), $degrees))
+		if ($success = $this->im->rotateImage(new ImagickPixel('transparent'), $degrees))
 		{
 			// Reset the width and height
 			$this->width = $this->im->getImageWidth();
@@ -109,22 +158,31 @@ class KO7_Image_Imagick extends Image {
 
 			// Trim off hidden areas
 			$this->im->setImagePage($this->width, $this->height, 0, 0);
-
-			return TRUE;
 		}
 
-		return FALSE;
+		return $success;
 	}
 
-	protected function _do_flip($direction)
+	/**
+	 * Flip function for Imagick
+	 *
+	 * @param int $direction  Flipping direction
+	 *
+	 * @return bool
+	 */
+	protected function _do_flip($direction): bool
 	{
-		if ($direction === Image::HORIZONTAL)
-			return $this->im->flopImage();
-		else
-			return $this->im->flipImage();
+		return $direction === Image::HORIZONTAL ? $this->im->flopImage() : $this->im->flipImage();
 	}
 
-	protected function _do_sharpen($amount)
+	/**
+	 * Sharpen function for Imagick
+	 *
+	 * @param int $amount  Amount to sharpen
+	 *
+	 * @return bool
+	 */
+	protected function _do_sharpen($amount): bool
 	{
 		// IM not support $amount under 5 (0.15)
 		$amount = ($amount < 5) ? 5 : $amount;
@@ -135,10 +193,21 @@ class KO7_Image_Imagick extends Image {
 		return $this->im->sharpenImage(0, $amount);
 	}
 
-	protected function _do_reflection($height, $opacity, $fade_in)
+	/**
+	 * Reflection function for Imagick
+	 *
+	 * @param int  $height	 Height of reflection
+	 * @param int  $opacity  Opacity of reflection
+	 * @param bool $fade_in  TRUE to fade in, FALSE to fade out
+	 *
+	 * @throws Image_Exception
+	 *
+	 * @return bool
+	 */
+	protected function _do_reflection($height, $opacity, $fade_in): bool
 	{
 		// Clone the current image and flip it for reflection
-		$reflection = $this->im->clone();
+		$reflection = clone $this->im;
 		$reflection->flipImage();
 
 		// Crop the reflection to the selected height
@@ -155,7 +224,17 @@ class KO7_Image_Imagick extends Image {
 		}
 
 		// Create a gradient for fading
-		$fade = new Imagick;
+		//@codeCoverageIgnoreStart
+		try
+		{
+			$fade = new Imagick;
+		}
+		catch (ImagickException $e)
+		{
+			throw new Image_Exception($e->getMessage(), NULL, $e->getCode(), $e);
+		}
+		//@codeCoverageIgnoreEnd
+
 		$fade->newPseudoImage($reflection->getImageWidth(), $reflection->getImageHeight(), vsprintf('gradient:%s-%s', $direction));
 
 		// Apply the fade alpha channel to the reflection
@@ -165,21 +244,34 @@ class KO7_Image_Imagick extends Image {
 		$reflection->evaluateImage(Imagick::EVALUATE_MULTIPLY, $opacity / 100, Imagick::CHANNEL_ALPHA);
 
 		// Create a new container to hold the image and reflection
-		$image = new Imagick;
+		//@codeCoverageIgnoreStart
+		try
+		{
+			$image = new Imagick;
+		}
+		catch (ImagickException $e)
+		{
+			throw new Image_Exception($e->getMessage(), NULL, $e->getCode(), $e); //@codeCoverageIgnore
+		}
+		//@codeCoverageIgnoreEnd
+
 		$image->newImage($this->width, $this->height + $height, new ImagickPixel);
 
 		// Force the image to have an alpha channel
 		$image->setImageAlphaChannel(Imagick::ALPHACHANNEL_SET);
 
 		// Force the background color to be transparent
-		// $image->setImageBackgroundColor(new ImagickPixel('transparent'));
+		$image->setImageBackgroundColor(new ImagickPixel('transparent'));
 
 		// Match the colorspace between the two images before compositing
 		$image->setColorspace($this->im->getColorspace());
 
+
 		// Place the image and reflection into the container
-		if ($image->compositeImage($this->im, Imagick::COMPOSITE_SRC, 0, 0)
-		AND $image->compositeImage($reflection, Imagick::COMPOSITE_OVER, 0, $this->height))
+		if (
+		($success = $image->compositeImage($this->im, Imagick::COMPOSITE_SRC, 0, 0)) &&
+		($success = $image->compositeImage($reflection, Imagick::COMPOSITE_OVER, 0, $this->height))
+		)
 		{
 			// Replace the current image with the reflected image
 			$this->im = $image;
@@ -187,45 +279,95 @@ class KO7_Image_Imagick extends Image {
 			// Reset the width and height
 			$this->width = $this->im->getImageWidth();
 			$this->height = $this->im->getImageHeight();
-
-			return TRUE;
 		}
 
-		return FALSE;
+		return $success;
 	}
 
-	protected function _do_watermark(Image $image, $offset_x, $offset_y, $opacity)
+	/**
+	 * Watermark function for Imagick
+	 *
+	 * @param Image $image		Watermark
+	 * @param int   $offset_x	Offset from left
+	 * @param int   $offset_y	Offset from top
+	 * @param int   $opacity	Opacity of Watermark
+	 *
+	 * @throws Image_Exception
+	 * @return bool
+	 */
+	protected function _do_watermark(Image $image, $offset_x, $offset_y, $opacity): bool
 	{
-		// Convert the Image intance into an Imagick instance
-		$watermark = new Imagick;
-		$watermark->readImageBlob($image->render(), $image->file);
-
-		if ($watermark->getImageAlphaChannel() !== Imagick::ALPHACHANNEL_ACTIVATE)
+		//@codeCoverageIgnoreStart
+		try
 		{
-			// Force the image to have an alpha channel
-			$watermark->setImageAlphaChannel(Imagick::ALPHACHANNEL_OPAQUE);
+			// Convert the Image instance into an Imagick instance
+			$watermark = new Imagick;
+			$watermark->readImageBlob($image->render(), $image->file);
+		}
+		catch (ImagickException $e)
+		{
+			throw new Image_Exception($e->getMessage(), NULL, $e->getCode(), $e);
+		}
+		//@codeCoverageIgnoreEnd
+
+		// Imagick since version 7.0 uses different alpha channel constant
+		if (version_compare(static::$_version, '7.0', '<'))
+		{
+			$channel = constant('Imagick::ALPHACHANNEL_OPAQUE'); //@codeCoverageIgnore
+		}
+		else
+		{
+			$channel = constant('Imagick::ALPHACHANNEL_ON');
 		}
 
+		// Force the image to have an alpha channel
+		if ($watermark->getImageAlphaChannel() !== $channel)
+		{
+			$watermark->setImageAlphaChannel($channel);
+		}
+
+		// NOTE: Using setImageOpacity will destroy current alpha channels! Use evaluateImage instead.
 		if ($opacity < 100)
 		{
-			// NOTE: Using setImageOpacity will destroy current alpha channels!
 			$watermark->evaluateImage(Imagick::EVALUATE_MULTIPLY, $opacity / 100, Imagick::CHANNEL_ALPHA);
 		}
 
 		// Match the colorspace between the two images before compositing
-		// $watermark->setColorspace($this->im->getColorspace());
+		$watermark->setColorspace($this->im->getColorspace());
 
 		// Apply the watermark to the image
 		return $this->im->compositeImage($watermark, Imagick::COMPOSITE_DISSOLVE, $offset_x, $offset_y);
 	}
 
-	protected function _do_background($r, $g, $b, $opacity)
+	/**
+	 * Background function for Imagick
+	 *
+	 * @param int $r		Red Color value
+	 * @param int $g		Green Color value
+	 * @param int $b		Blue Color value
+	 * @param int $opacity	Opacity of background
+	 *
+	 * @throws Image_Exception
+	 *
+	 * @return bool
+	 */
+	protected function _do_background($r, $g, $b, $opacity): bool
 	{
 		// Create a RGB color for the background
 		$color = sprintf('rgb(%d, %d, %d)', $r, $g, $b);
 
-		// Create a new image for the background
-		$background = new Imagick;
+		//@codeCoverageIgnoreStart
+		try
+		{
+			// Create a new image for the background
+			$background = new Imagick;
+		}
+		catch (ImagickException $e)
+		{
+			throw new Image_Exception($e->getMessage(), NULL, $e->getCode(), $e);
+		}
+		//@codeCoverageIgnoreEnd
+
 		$background->newImage($this->width, $this->height, new ImagickPixel($color));
 
 		if ( ! $background->getImageAlphaChannel())
@@ -243,44 +385,77 @@ class KO7_Image_Imagick extends Image {
 		// Match the colorspace between the two images before compositing
 		$background->setColorspace($this->im->getColorspace());
 
-		if ($background->compositeImage($this->im, Imagick::COMPOSITE_DISSOLVE, 0, 0))
+		if ($success = $background->compositeImage($this->im, Imagick::COMPOSITE_DISSOLVE, 0, 0))
 		{
 			// Replace the current image with the new image
 			$this->im = $background;
-
-			return TRUE;
 		}
 
-		return FALSE;
+		return $success;
 	}
 
-	protected function _do_save($file, $quality)
+	/**
+	 * Save Image to file
+	 *
+	 * @param string $file		Image File Name
+	 * @param int    $quality	Image Quality
+	 *
+	 * @return bool
+	 */
+	protected function _do_save($file, $quality): bool
 	{
-		// Get the image format and type
-		list($format, $type) = $this->_get_imagetype(pathinfo($file, PATHINFO_EXTENSION));
+		// Get the extension
+		$extension = pathinfo($file, PATHINFO_EXTENSION);
 
-		// Set the output image type
-		$this->im->setFormat($format);
+		// If extension is not given auto detect and use current one
+		if (!$extension)
+		{
+			$extension = image_type_to_extension($this->type, FALSE);
+		}
+
+		// Get the image format and type
+		$format = strtolower($extension);
+		$type = static::extension_to_image_type($extension);
+
+		// Set the output image type - don't do this for webp files
+		if ($type !== IMAGETYPE_WEBP)
+		{
+			$this->im->setFormat($format);
+		}
+		else
+		{
+			$file = 'webp:' . $file;
+		}
 
 		// Set the output quality
 		$this->im->setImageCompressionQuality($quality);
 
-		if ($this->im->writeImage($file))
+		// Remove exif data
+		$this->im->stripImage();
+
+		if ($success = $this->im->writeImage($file))
 		{
 			// Reset the image type and mime type
 			$this->type = $type;
 			$this->mime = image_type_to_mime_type($type);
-
-			return TRUE;
 		}
 
-		return FALSE;
+		return $success;
 	}
 
-	protected function _do_render($type, $quality)
+	/**
+	 * Render function for Imagick
+	 *
+	 * @param string $extension		Target Extension
+	 * @param int    $quality		Render Quality
+	 *
+	 * @return string
+	 */
+	protected function _do_render($extension, $quality): string
 	{
 		// Get the image format and type
-		list($format, $type) = $this->_get_imagetype($type);
+		$format = strtolower($extension);
+		$type = static::extension_to_image_type($extension);
 
 		// Set the output image type
 		$this->im->setFormat($format);
@@ -292,44 +467,20 @@ class KO7_Image_Imagick extends Image {
 		$this->type = $type;
 		$this->mime = image_type_to_mime_type($type);
 
-		return (string) $this->im;
+		return (string)$this->im;
 	}
 
 	/**
-	 * Get the image type and format for an extension.
+	 * Return if image type is supported by Imagick
 	 *
-	 * @param   string  $extension  image extension: png, jpg, etc
-	 * @return  string  IMAGETYPE_* constant
-	 * @throws  KO7_Exception
+	 * @param int $type	 IMAGETYPE_* Constant
+	 *
+	 * @return bool
 	 */
-	protected function _get_imagetype($extension)
+	protected function _is_supported_type(int $type): bool
 	{
-		// Normalize the extension to a format
-		$format = strtolower($extension);
-
-		switch ($format)
-		{
-			case 'jpg':
-			case 'jpe':
-			case 'jpeg':
-				$type = IMAGETYPE_JPEG;
-			break;
-			case 'gif':
-				$type = IMAGETYPE_GIF;
-			break;
-			case 'png':
-				$type = IMAGETYPE_PNG;
-			break;
-			case 'webp':
-				$type = IMAGETYPE_WEBP;
-			break;
-			default:
-				throw new KO7_Exception('Installed ImageMagick does not support :type images',
-					[':type' => $extension]);
-			break;
-		}
-
-		return [$format, $type];
+		$ext = image_type_to_extension($type, FALSE);
+		return ! empty($this->im::queryFormats(strtoupper($ext)));
 	}
 
 }

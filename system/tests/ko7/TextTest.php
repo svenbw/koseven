@@ -674,8 +674,8 @@ class KO7_TextTest extends Unittest_TestCase
 	{
 		return [
 			[
-				'Hi there, my site is koseven.ga and you can email me at nobody@koseven.ga',
-				['koseven.ga'],
+				'Hi there, my site is koseven.dev and you can email me at nobody@koseven.dev',
+				['koseven.dev'],
 			],
 
 			[

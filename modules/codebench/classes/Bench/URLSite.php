@@ -6,7 +6,7 @@
  */
 class Bench_URLSite extends Codebench {
 
-	public $description = 'http://koseven.ga/issues/3110';
+	public $description = 'http://koseven.dev/issues/3110';
 
 	public $loops = 1000;
 

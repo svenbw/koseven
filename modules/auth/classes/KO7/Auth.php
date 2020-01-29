@@ -4,9 +4,10 @@
  * password hashing.
  *
  * @package    KO7/Auth
- * @author     Kohana Team
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ *
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 abstract class KO7_Auth {
 
@@ -129,18 +130,6 @@ abstract class KO7_Auth {
 	public function logged_in($role = NULL)
 	{
 		return ($this->get_user() !== NULL);
-	}
-
-	/**
-	 * Creates a hashed hmac password from a plaintext password. This
-	 * method is deprecated, [Auth::hash] should be used instead.
-	 *
-	 * @deprecated
-	 * @param  string  $password Plaintext password
-	 */
-	public function hash_password($password)
-	{
-		return $this->hash($password);
 	}
 
 	/**

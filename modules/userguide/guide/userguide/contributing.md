@@ -8,11 +8,11 @@ Documentation should use complete sentences, good grammar, and be as clear as po
 
 Try to commit often, with each commit only changing a file or two, rather than changing a ton of files and commiting it all at once.  This will make it easier to offer feedback and merge your changes.   Make sure your commit messages are clear and descriptive.  Bad: "Added docs",  Good: "Added initial draft of hello world tutorial",  Bad: "Fixed typos",  Good: "Fixed typos on the query builder page"
 
-If you feel a menu needs to be rearranged or a module needs new pages, please open a [bug report](http://koseven.ga/projects/userguide3/issues/new) to discuss it.
+If you feel a menu needs to be rearranged or a module needs new pages, please open a [bug report](http://koseven.dev/projects/userguide3/issues/new) to discuss it.
 
 ## Quick Method
 
-To quickly point out something that needs improvement, report a [bug report](http://koseven.ga/projects/userguide3/issues/new).
+To quickly point out something that needs improvement, report a [bug report](http://koseven.dev/projects/userguide3/issues/new).
 
 If you want to contribute some changes, you can do so right from your browser without even knowing git!
 

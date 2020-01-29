@@ -9,10 +9,11 @@
  *
  * @package    KO7
  * @category   Tests
- * @author     Kohana Team
+ *
  * @author     BRMatt <matthew@sigswitch.com>
- * @copyright  (c) Kohana Team
- * @license    https://koseven.ga/LICENSE.md
+ * @copyright  (c) 2007-2016  Kohana Team
+ * @copyright  (c) since 2016 Koseven Team
+ * @license    https://koseven.dev/LICENSE
  */
 
 include KO7::find_file('tests', 'test_data/callback_routes');
@@ -117,7 +118,7 @@ class KO7_RouteTest extends Unittest_TestCase
 	}
 
 	/**
-	 * Check appending cached routes. See http://koseven.ga/issues/4347
+	 * Check appending cached routes. See http://koseven.dev/issues/4347
 	 *
 	 * @test
 	 * @covers Route::cache
@@ -637,7 +638,7 @@ class KO7_RouteTest extends Unittest_TestCase
 		return [
 			['/'],
 			['/news/view/42', ['controller' => 'news', 'action' => 'view', 'id' => 42]],
-			['http://koseven.ga/news', ['controller' => 'news'], 'http']
+			['http://koseven.dev/news', ['controller' => 'news'], 'http']
 		];
 	}
 
@@ -661,7 +662,7 @@ class KO7_RouteTest extends Unittest_TestCase
 		);
 
 		$this->setEnvironment([
-			'_SERVER' => ['HTTP_HOST' => 'koseven.ga'],
+			'_SERVER' => ['HTTP_HOST' => 'koseven.dev'],
 			'KO7::$base_url' => '/',
 			'KO7::$index_file' => '',
 		]);
@@ -709,7 +710,7 @@ class KO7_RouteTest extends Unittest_TestCase
 			->defaults([
 				'controller' => 'foo',
 				'action'     => 'bar',
-				'host'       => 'http://koseven.ga/'
+				'host'       => 'http://koseven.dev/'
 				]
 			);
 
@@ -733,26 +734,26 @@ class KO7_RouteTest extends Unittest_TestCase
 				[
 					'controller'  => 'foo',
 					'action'      => 'bar',
-					'host'        => 'koseven.ga'
+					'host'        => 'koseven.dev'
 				],
-				'http://koseven.ga/foo/bar'
+				'http://koseven.dev/foo/bar'
 			],
 			[
 				'<controller>/<action>',
 				[
 					'controller'  => 'foo',
 					'action'      => 'bar',
-					'host'        => 'http://koseven.ga/'
+					'host'        => 'http://koseven.dev/'
 				],
-				'http://koseven.ga/foo/bar'
+				'http://koseven.dev/foo/bar'
 			],
 			[
 				'foo/bar',
 				[
 					'controller'  => 'foo',
-					'host'        => 'http://koseven.ga/'
+					'host'        => 'http://koseven.dev/'
 				],
-				'http://koseven.ga/foo/bar'
+				'http://koseven.dev/foo/bar'
 			],
 		];
 	}
@@ -845,7 +846,7 @@ class KO7_RouteTest extends Unittest_TestCase
 	}
 
 	/**
-	 * http://koseven.ga/issues/4079
+	 * http://koseven.dev/issues/4079
 	 *
 	 * @test
 	 * @covers Route::get
